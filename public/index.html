@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DataWorkshop Research Hub</title>
+  <meta name="description" content="Democratizing LLM training in Open Science environments — project hub." />
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png" type="image/png">
+  <meta name="theme-color" content="#0a84ff">
+  <style>
+    :root { --max: 880px; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, sans-serif;
+           line-height: 1.5; margin: 0; color: #111; background: #fff; }
+    header { border-bottom: 1px solid #e5e7eb; background: #f9fafb; }
+    .wrap { max-width: var(--max); margin: 0 auto; padding: 1.25rem; }
+    h1 { font-size: clamp(1.5rem, 2.2vw + 1rem, 2.25rem); margin: 0.2rem 0 0.6rem; }
+    nav a { margin-right: 1rem; }
+    main h2 { margin-top: 1.8rem; }
+    .card { border: 1px solid #e5e7eb; border-radius: 10px; padding: 1rem; margin: 1rem 0; }
+    button.install { padding: .6rem 1rem; border-radius: 8px; border: 1px solid #0a84ff; background: #0a84ff; color: #fff; font-weight: 600; }
+    button.install[disabled] { opacity:.5; cursor:not-allowed; }
+    footer { border-top: 1px solid #e5e7eb; background: #fafafa; margin-top: 2rem; }
+    .muted { color: #555; }
+    a.button { display:inline-block; padding:.55rem .9rem; border:1px solid #111; border-radius:8px; text-decoration:none; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap" role="navigation" aria-label="Primary">
+      <h1>DataWorkshop Research Hub</h1>
+      <p class="muted">Democratizing Large Language Model Training in Open Science Environments</p>
+      <nav>
+        <a href="#about">About</a>
+        <a href="#links">Links</a>
+        <a href="#pwa">Install</a>
+        <a href="#lighthouse">Lighthouse</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section id="about" class="card" aria-labelledby="about-h">
+      <h2 id="about-h">About this project</h2>
+      <p>This minimal, installable web app is the front door for the semester project:
+      <strong>Democratizing Large Language Model Training in Open Science Environments</strong>.
+      It's built as a static PWA so it's fast, accessible, and easy to deploy.</p>
+    </section>
+
+    <section id="links" class="card" aria-labelledby="links-h">
+      <h2 id="links-h">Project links</h2>
+      <ul>
+        <li><strong>GitHub repo:</strong> <a id="repo-link" href="https://github.com/&lt;your-username&gt;/dataworkshop-hub">https://github.com/&lt;your-username&gt;/dataworkshop-hub</a></li>
+        <li><strong>ED Projects thread:</strong> <a id="ed-link" href="https://&lt;ed-discussion-thread-url&gt;">https://&lt;ed-discussion-thread-url&gt;</a></li>
+      </ul>
+      <p>Update these links in <code>public/index.html</code> after you create the repo and ED post.</p>
+    </section>
+
+    <section id="lighthouse" class="card" aria-labelledby="lh-h">
+      <h2 id="lh-h">Lighthouse metrics</h2>
+      <p>This site is designed for high scores on Performance, Accessibility, Best Practices, and SEO. A GitHub Action runs Lighthouse CI on every push and warns if thresholds drop.</p>
+      <a class="button" href="https://web.dev/measure/" target="_blank" rel="noreferrer">Run a manual audit</a>
+    </section>
+
+    <section id="pwa" class="card" aria-labelledby="pwa-h">
+      <h2 id="pwa-h">Install the app (PWA)</h2>
+      <p>Install this site like an app for quick access and offline reading.</p>
+      <button class="install" id="btn-install" disabled aria-disabled="true">Install App</button>
+      <p class="muted">The button enables when your browser offers installation.</p>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p class="muted">© 2025 Chris • MIT License • <a href="./offline.html">Offline help</a></p>
+    </div>
+  </footer>
+
+<script>
+// Register the service worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(console.error);
+  });
+}
+
+// Handle PWA install prompt
+let deferredPrompt;
+const btnInstall = document.getElementById('btn-install');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  btnInstall.disabled = false;
+  btnInstall.removeAttribute('aria-disabled');
+});
+
+btnInstall.addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  btnInstall.disabled = true;
+  btnInstall.setAttribute('aria-disabled', 'true');
+});
+</script>
+</body>
+</html>
