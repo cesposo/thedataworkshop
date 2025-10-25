@@ -1,0 +1,2 @@
+[console_scripts]
+dist-llm-train = dist_llm_train.cli:main

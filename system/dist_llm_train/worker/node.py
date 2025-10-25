@@ -1,6 +1,10 @@
 import uuid
 import time
+import threading
 from typing import List, Dict, TYPE_CHECKING
+
+from dist_llm_train.communication.rpc import RPCCommunicator
+from .task_executor import TaskExecutor
 
 # By using TYPE_CHECKING, we can import the TrainingTask for type hints
 # without causing a circular import error at runtime.
@@ -12,7 +16,9 @@ class WorkerNode:
     Represents a worker node in the distributed training cluster.
     It has a specific resource profile and can rank its preference for tasks.
     """
-    def __init__(self, name: str, memory: float, flops_per_second: int, network_bandwidth: int):
+    def __init__(self, name: str, memory: float, flops_per_second: int, network_bandwidth: int,
+                 host: str, port: int, controller_address: str,
+                 gpu_type: str = 'N/A', gpu_count: int = 0, pci_e_lanes: int = 0, nvlink_version: str = 'N/A'):
         """
         Initializes a WorkerNode.
 
@@ -21,11 +27,23 @@ class WorkerNode:
             memory (float): Total available memory in GB.
             flops_per_second (int): A measure of the worker's compute capability.
             network_bandwidth (int): Network bandwidth in Mbps.
+            host (str): The host address for the worker's RPC server.
+            port (int): The port for the worker's RPC server.
+            controller_address (str): The address of the main controller.
+            gpu_type (str): The type of GPU (e.g., 'A100', 'V100').
+            gpu_count (int): The number of GPUs available.
+            pci_e_lanes (int): The number of PCIe lanes.
+            nvlink_version (str): The NVLink version.
         """
         self.id = f"{name}-{str(uuid.uuid4())[:4]}"
         self.memory = memory
         self.flops_per_second = flops_per_second
         self.network_bandwidth = network_bandwidth
+        self.gpu_type = gpu_type
+        self.gpu_count = gpu_count
+        self.pci_e_lanes = pci_e_lanes
+        self.nvlink_version = nvlink_version
+        self.controller_address = controller_address
 
         self.status = 'available'  # Can be 'available', 'busy', 'offline'
         self.preferences: List[str] = [] # A ranked list of task IDs
@@ -33,12 +51,59 @@ class WorkerNode:
 
         self.last_heartbeat = time.time()
 
+        self.communicator = RPCCommunicator(host, port)
+        self.communicator.register_function(self.receive_task, 'receive_task')
+        self.communicator.start_server()
+
+        self.executor = TaskExecutor(self.id, self.communicator, self.controller_address)
+
     def __repr__(self) -> str:
-        return f"WorkerNode(id={self.id}, mem={self.memory}GB, status='{self.status}')"
+        return (f"WorkerNode(id={self.id}, mem={self.memory}GB, gpu='{self.gpu_type}', "
+                f"gpu_count={self.gpu_count}, status='{self.status}')")
 
     def send_heartbeat(self):
-        """Simulates the worker sending a heartbeat to the controller."""
-        self.last_heartbeat = time.time()
+        """Sends a heartbeat to the controller."""
+        print(f"[Worker {self.id}] Sending heartbeat to controller.")
+        try:
+            self.communicator.send(self.controller_address, {
+                'method': 'heartbeat',
+                'params': [self.id, self.status]
+            })
+            self.last_heartbeat = time.time()
+        except Exception as e:
+            print(f"[Worker {self.id}] Failed to send heartbeat: {e}")
+
+    def receive_task(self, task_dict: Dict):
+        """
+        Receives a task from the controller and starts processing it.
+
+        Args:
+            task_dict: Dictionary representation of the task
+        """
+        from dist_llm_train.task.training_task import TrainingTask
+
+        # Reconstruct TrainingTask from dict
+        task = TrainingTask(
+            task_id=task_dict['id'],
+            model_name=task_dict['model_name'],
+            model_layer=task_dict['model_layer'],
+            model_shard_size=task_dict['model_shard_size'],
+            data_size=task_dict['data_size'],
+            required_flops=task_dict['required_flops'],
+            optimizer_state_size=task_dict.get('optimizer_state_size', 0),
+            gradient_size=task_dict.get('gradient_size', 0),
+            activation_size=task_dict.get('activation_size', 0),
+            model_config=task_dict.get('model_config', {}),
+            training_config=task_dict.get('training_config', {})
+        )
+
+        print(f"[Worker {self.id}] Received task: {task.id}")
+        self.assigned_task_id = task.id
+        self.status = 'busy'
+
+        # Execute the task in a new thread to avoid blocking the RPC server
+        task_thread = threading.Thread(target=self.executor.execute_task, args=(task,))
+        task_thread.start()
 
     def get_compute_score(self) -> float:
         """A simple score to represent the worker's overall compute power."""
@@ -50,34 +115,27 @@ class WorkerNode:
     def calculate_preferences(self, tasks: List['TrainingTask']):
         """
         Calculates and ranks its preference for a list of tasks.
+
+        A worker's preference is determined by how well a task matches
+        the worker's capabilities. A worker prefers tasks that fit within
+        its memory and can be computed efficiently.
+
+        Args:
+            tasks (List[TrainingTask]): The list of training tasks to rank.
         """
         scores = {}
         for task in tasks:
-            if self.status != 'available' or self.memory < task.get_total_memory_req():
+            # Check if the task can fit in memory
+            if task.get_total_memory_req() > self.memory:
                 score = -1.0
             else:
-                score = task.required_flops
+                # Prefer tasks that use resources efficiently
+                # Higher score for tasks that require more compute (better utilization)
+                memory_efficiency = task.get_total_memory_req() / self.memory
+                compute_match = min(task.required_flops / self.flops_per_second, 1.0)
+                score = (compute_match + memory_efficiency) / 2.0
             scores[task.id] = score
 
+        # Sort tasks by score (higher is better)
         sorted_task_ids = sorted(scores.keys(), key=lambda t_id: scores[t_id], reverse=True)
         self.preferences = [t_id for t_id in sorted_task_ids if scores[t_id] > 0]
-
-    def handle_proposal(self, task_id: str) -> bool:
-        """
-        Handles a proposal from a task.
-        """
-        if self.assigned_task_id is None:
-            self.assigned_task_id = task_id
-            return True
-
-        try:
-            current_assignment_rank = self.preferences.index(self.assigned_task_id)
-            new_proposal_rank = self.preferences.index(task_id)
-
-            if new_proposal_rank < current_assignment_rank:
-                self.assigned_task_id = task_id
-                return True
-            else:
-                return False
-        except ValueError:
-            return False

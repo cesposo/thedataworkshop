@@ -1,0 +1,82 @@
+Metadata-Version: 2.2
+Name: dist-llm-train
+Version: 0.1.0
+Summary: Democratizing Large Language Model Training in Open Science Environments
+Home-page: https://github.com/cesposo/llm_distributed_training
+Author: Chris Esposo
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Science/Research
+Classifier: Topic :: Scientific/Engineering :: Artificial Intelligence
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+Requires-Dist: torch>=2.0.0
+Requires-Dist: transformers>=4.30.0
+Requires-Dist: numpy>=1.24.0
+Requires-Dist: accelerate>=0.20.0
+Requires-Dist: pytest>=7.4.0
+Requires-Dist: pytest-cov>=4.1.0
+Requires-Dist: black>=23.0.0
+Requires-Dist: flake8>=6.0.0
+Requires-Dist: tensorboard>=2.13.0
+Requires-Dist: wandb>=0.15.0
+Requires-Dist: pyyaml>=6.0
+Requires-Dist: tqdm>=4.65.0
+Provides-Extra: dev
+Requires-Dist: pytest>=7.4.0; extra == "dev"
+Requires-Dist: pytest-cov>=4.1.0; extra == "dev"
+Requires-Dist: black>=23.0.0; extra == "dev"
+Requires-Dist: flake8>=6.0.0; extra == "dev"
+Dynamic: author
+Dynamic: classifier
+Dynamic: description
+Dynamic: description-content-type
+Dynamic: home-page
+Dynamic: provides-extra
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
+
+# Democratizing Large Language Model Training in Open Science Environments
+
+This project aims to democratize Large Language Model (LLM) training by leveraging distributed computing across heterogeneous and unreliable nodes, such as those found in Open Science (OS) pool environments. The goal is to enable the training of large-scale language models without the need for proprietary infrastructure, making it accessible to a broader range of researchers and institutions.
+
+## Key Features
+
+*   **Dynamic Resource Allocation:** Utilizes an adapted Gale-Shapley algorithm to dynamically and efficiently allocate computational resources in a heterogeneous environment.
+*   **RPC-based Communication:** Uses an RPC-based communication layer for interaction between the controller and worker nodes.
+*   **Pluggable Scheduler:** The controller can be configured with different scheduling algorithms.
+*   **Fault Tolerance:** Employs fault tolerance strategies to handle the volatility of wide-area networks, ensuring robust and efficient LLM training despite node failures.
+
+## Current Status
+
+The project is currently in the early stages of development. The core components of the system have been implemented, including:
+
+*   A `MainController` that manages the state of the system.
+*   A `WorkerNode` that represents a worker in the cluster.
+*   A `GaleShapleyScheduler` for task assignment.
+*   An RPC-based communication layer.
+*   A basic `TaskExecutor` for running tasks on workers.
+*   A `JobManager` for submitting training jobs.
+
+A simulation of the system can be run using the `simulations/simulation.py` script.
+
+## Project Structure
+
+The project is structured as a Python package with the following modules:
+
+*   `dist_llm_train/`: The main package for the distributed LLM training system.
+    *   `controller/`: Manages the overall training process.
+    *   `scheduler/`: Handles resource allocation and task scheduling.
+    *   `worker/`: Represents a worker node in the distributed system.
+    *   `task/`: Defines a training task.
+    *   `communication/`: Manages communication between nodes.
+*   `paper/`: Contains research papers and internal notes related to the project.
+*   `simulations/`: Includes simulation scripts for testing and evaluation.
+*   `tests/`: Contains unit and integration tests.

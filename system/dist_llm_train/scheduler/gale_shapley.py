@@ -1,16 +1,16 @@
 from typing import List, Dict, Tuple
 
-from dist_llm_train.worker.node import WorkerNode
 from dist_llm_train.task.training_task import TrainingTask
+from .base import BaseScheduler
 
-class Scheduler:
+class GaleShapleyScheduler(BaseScheduler):
     """
     Implements the Gale-Shapley stable matching algorithm to assign tasks to workers.
     In this implementation, tasks "propose" to workers.
     """
-    def __init__(self, tasks: List[TrainingTask], workers: List[WorkerNode]):
+    def __init__(self, tasks: List[TrainingTask], workers: List[Dict]):
         self.tasks = {task.id: task for task in tasks}
-        self.workers = {worker.id: worker for worker in workers}
+        self.workers = {worker['info'].id: worker for worker in workers}
 
         # A dictionary to track which worker each task has proposed to.
         # The value is the index in the task's preference list.
@@ -25,13 +25,14 @@ class Scheduler:
     def _prepare_for_matching(self):
         """Calculates the preference lists for all tasks and workers."""
         print("Calculating preferences for tasks and workers...")
+        worker_nodes = [w['info'] for w in self.workers.values()]
         for task in self.tasks.values():
-            task.calculate_preferences(list(self.workers.values()))
+            task.calculate_preferences(worker_nodes)
 
         for worker in self.workers.values():
-            worker.calculate_preferences(list(self.tasks.values()))
+            worker['info'].calculate_preferences(list(self.tasks.values()))
 
-    def match(self) -> Dict[str, str]:
+    def schedule(self) -> Dict[str, str]:
         """
         Performs the stable matching algorithm.
 
@@ -53,7 +54,7 @@ class Scheduler:
 
             # Get the next worker on the task's preference list.
             worker_id = task.preferences[self.proposals_made[task_id]]
-            worker = self.workers[worker_id]
+            worker = self.workers[worker_id]['info']
 
             print(f"Task {task_id} proposes to Worker {worker_id}.")
 
@@ -95,5 +96,5 @@ class Scheduler:
                     print(f"  - Worker {worker_id} has no preference for Task {task_id}, rejects.")
 
         # Compile the final list of matches from the worker assignments.
-        self.matches = {w.id: w.assigned_task_id for w in self.workers.values() if w.assigned_task_id is not None}
+        self.matches = {w['info'].id: w['info'].assigned_task_id for w in self.workers.values() if w['info'].assigned_task_id is not None}
         return self.matches
