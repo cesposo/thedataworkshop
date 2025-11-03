@@ -15,7 +15,8 @@ class TrainingTask:
                  model_shard_size: float, data_size: float, required_flops: int,
                  optimizer_state_size: float = 0, gradient_size: float = 0, activation_size: float = 0,
                  model_config: Optional[Dict[str, Any]] = None,
-                 training_config: Optional[Dict[str, Any]] = None):
+                 training_config: Optional[Dict[str, Any]] = None,
+                 priority: int = 0):
         """
         Initializes a TrainingTask.
 
@@ -31,6 +32,7 @@ class TrainingTask:
             activation_size (float): Memory for activations (in GB).
             model_config (dict, optional): Configuration for the model (type, size, etc.)
             training_config (dict, optional): Configuration for training (lr, batch_size, etc.)
+            priority (int): The priority of the task (higher value means higher priority).
         """
         self.id = task_id
         self.model_name = model_name
@@ -41,6 +43,7 @@ class TrainingTask:
         self.optimizer_state_size = optimizer_state_size
         self.gradient_size = gradient_size
         self.activation_size = activation_size
+        self.priority = priority
 
         # ML-specific configurations
         self.model_config = model_config or {}

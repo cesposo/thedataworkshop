@@ -1,0 +1,53 @@
+# Controller configuration
+controller:
+  host: localhost
+  port: 8000
+  scheduler: priority
+
+# Worker configuration
+workers:
+  - name: worker-1
+    memory: 16
+    flops_per_second: 100
+    network_bandwidth: 1000
+    host: localhost
+    port: 8001
+  - name: worker-2
+    memory: 32
+    flops_per_second: 200
+    network_bandwidth: 1000
+    host: localhost
+    port: 8002
+
+# Model configuration
+model:
+  name: tiny-lstm
+
+# Training configuration
+training:
+  learning_rate: 0.001
+  batch_size: 8
+  num_epochs: 1 # Reduced from 2
+  num_samples: 10 # Reduced from 50
+  seq_length: 32
+  num_workers: 2
+
+# Task configuration
+tasks:
+  - id: ml-task-0
+    model_shard_size: 0.5
+    data_size: 0.1
+    required_flops: 1000
+    priority: 1
+  - id: ml-task-1
+    model_shard_size: 0.5
+    data_size: 0.1
+    required_flops: 1000
+    priority: 2
+
+# Simulation configuration
+simulation:
+  heartbeat_cycles: 5 # Reduced from 30
+  heartbeat_interval: 1 # Reduced from 5
+  scheduling_cycles: 3 # Reduced from 5
+  scheduling_interval: 2 # Reduced from 15

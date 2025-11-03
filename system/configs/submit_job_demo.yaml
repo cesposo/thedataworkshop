@@ -1,0 +1,22 @@
+controller:
+  host: localhost
+  port: 0
+
+workers:
+  - name: w1
+    memory: 16
+    flops: 100          # CLI submit-job expects 'flops' and 'bandwidth'
+    bandwidth: 1000
+    port: 0
+  - name: w2
+    memory: 24
+    flops: 150
+    bandwidth: 1000
+    port: 0
+
+job:
+  name: demo-job
+  num_tasks: 4
+
+cycles: 2
+

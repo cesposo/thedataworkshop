@@ -1,0 +1,59 @@
+controller:
+  host: localhost
+  port: 0
+  scheduler: capability
+
+workers:
+  - name: w1-fast
+    memory: 24
+    flops_per_second: 250
+    network_bandwidth: 1200
+    host: localhost
+    port: 0
+  - name: w2-medium
+    memory: 16
+    flops_per_second: 150
+    network_bandwidth: 800
+    host: localhost
+    port: 0
+  - name: w3-bigmem
+    memory: 32
+    flops_per_second: 80
+    network_bandwidth: 500
+    host: localhost
+    port: 0
+
+model:
+  name: tiny-lstm
+
+training:
+  learning_rate: 0.001
+  batch_size: 8
+  num_epochs: 1
+  num_samples: 12
+  seq_length: 16
+  num_workers: 3
+
+tasks:
+  - id: t0
+    model_shard_size: 0.5
+    data_size: 0.1
+    required_flops: 100
+    priority: 1
+  - id: t1
+    model_shard_size: 1.0
+    data_size: 0.2
+    required_flops: 200
+    priority: 2
+  - id: t2
+    model_shard_size: 0.5
+    data_size: 0.1
+    required_flops: 90
+    priority: 1
+
+simulation:
+  heartbeat_cycles: 3
+  heartbeat_interval: 1
+  scheduling_cycles: 2
+  scheduling_interval: 1
+

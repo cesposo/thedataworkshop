@@ -1,0 +1,48 @@
+controller:
+  host: localhost
+  port: 0            # auto-assign free port
+  scheduler: priority
+
+workers:
+  - name: w1
+    memory: 16
+    flops_per_second: 100
+    network_bandwidth: 1000
+    host: localhost
+    port: 0
+  - name: w2
+    memory: 24
+    flops_per_second: 150
+    network_bandwidth: 1000
+    host: localhost
+    port: 0
+
+model:
+  name: tiny-lstm
+
+training:
+  learning_rate: 0.001
+  batch_size: 8
+  num_epochs: 1
+  num_samples: 8
+  seq_length: 16
+  num_workers: 2
+
+tasks:
+  - id: t0
+    model_shard_size: 0.5
+    data_size: 0.1
+    required_flops: 100
+    priority: 1
+  - id: t1
+    model_shard_size: 0.5
+    data_size: 0.1
+    required_flops: 100
+    priority: 2
+
+simulation:
+  heartbeat_cycles: 3
+  heartbeat_interval: 1
+  scheduling_cycles: 2
+  scheduling_interval: 1
+

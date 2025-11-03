@@ -4,6 +4,9 @@ Simulation of distributed training with real PyTorch models.
 
 import time
 import threading
+from dist_llm_train.config import load_config
+from dist_llm_train.logging_utils import configure_logging
+import os
 
 from dist_llm_train.controller.main_controller import MainController
 from dist_llm_train.worker.node import WorkerNode
@@ -11,7 +14,7 @@ from dist_llm_train.task.training_task import TrainingTask
 from dist_llm_train.models.model_loader import ModelLoader
 
 
-def run_ml_training_simulation():
+def run_ml_training_simulation(config_path: str = 'config.yaml', state_db_path: str = None, ps_checkpoint_path: str = None):
     """
     Runs a simulation with real ML training using PyTorch.
     """
@@ -19,64 +22,65 @@ def run_ml_training_simulation():
     print("ML TRAINING SIMULATION - Using Real PyTorch Models")
     print("="*80)
 
+    # Configure logging and load configuration
+    configure_logging()
+    config = load_config(config_path)
+    controller_config = config['controller']
+    workers_config = config['workers']
+    model_config_name = config['model']['name']
+    training_config = config['training']
+    tasks_config = config['tasks']
+    simulation_config = config['simulation']
+
     # Create the main controller
-    controller = MainController(host='localhost', port=8000)
-
-    # Create worker nodes
-    worker1 = WorkerNode(
-        name='worker-1',
-        memory=16,
-        flops_per_second=100,
-        network_bandwidth=1000,
-        host='localhost',
-        port=8001,
-        controller_address='http://localhost:8000'
-    )
-    worker2 = WorkerNode(
-        name='worker-2',
-        memory=32,
-        flops_per_second=200,
-        network_bandwidth=1000,
-        host='localhost',
-        port=8002,
-        controller_address='http://localhost:8000'
+    controller = MainController(
+        host=controller_config['host'],
+        port=controller_config['port'],
+        scheduler_name=controller_config.get('scheduler', 'gale-shapley'),
+        state_db_path=state_db_path,
     )
 
-    # Register workers with the controller
-    controller.register_worker(
-        worker1.id,
-        f'http://{worker1.communicator.host}:{worker1.communicator.port}',
-        worker1
-    )
-    controller.register_worker(
-        worker2.id,
-        f'http://{worker2.communicator.host}:{worker2.communicator.port}',
-        worker2
-    )
+    # Optionally load parameter server checkpoint
+    if ps_checkpoint_path and os.path.exists(ps_checkpoint_path):
+        try:
+            controller.ps_load(ps_checkpoint_path)
+        except Exception:
+            pass
+
+    # Create and register worker nodes
+    workers = []
+    for worker_conf in workers_config:
+        worker = WorkerNode(
+            name=worker_conf['name'],
+            memory=worker_conf['memory'],
+            flops_per_second=worker_conf['flops_per_second'],
+            network_bandwidth=worker_conf['network_bandwidth'],
+            host=worker_conf['host'],
+            port=worker_conf['port'],
+            controller_address=f"http://{controller_config['host']}:{controller_config['port']}"
+        )
+        workers.append(worker)
+        controller.register_worker(
+            worker.id,
+            f'http://{worker.communicator.host}:{worker.communicator.port}',
+            worker
+        )
 
     # Get model configuration
-    model_config = ModelLoader.get_model_config('tiny-lstm')
-
-    # Create training configuration
-    training_config = {
-        'learning_rate': 0.001,
-        'batch_size': 8,
-        'num_epochs': 2,
-        'num_samples': 50,  # Small for quick testing
-        'seq_length': 32
-    }
+    model_config = ModelLoader.get_model_config(model_config_name)
 
     # Create ML training tasks
     print("\n[Simulation] Creating ML training tasks...")
     tasks = []
-    for i in range(2):
+    for i, task_config in enumerate(tasks_config):
         task = TrainingTask(
-            task_id=f"ml-task-{i}",
+            task_id=task_config['id'],
             model_name=model_config['type'],
             model_layer=i,
-            model_shard_size=0.5,  # GB
-            data_size=0.1,  # GB
-            required_flops=1000,
+            model_shard_size=task_config['model_shard_size'],
+            data_size=task_config['data_size'],
+            required_flops=task_config['required_flops'],
+            priority=task_config['priority'],
             model_config=model_config,
             training_config=training_config
         )
@@ -89,29 +93,35 @@ def run_ml_training_simulation():
 
     # Start sending heartbeats from workers
     def send_heartbeats(worker):
-        for _ in range(30):  # Run for 30 heartbeat cycles
+        for _ in range(simulation_config['heartbeat_cycles']):
             worker.send_heartbeat()
-            time.sleep(5)
+            time.sleep(simulation_config['heartbeat_interval'])
 
-    heartbeat_thread1 = threading.Thread(target=send_heartbeats, args=(worker1,))
-    heartbeat_thread2 = threading.Thread(target=send_heartbeats, args=(worker2,))
-    heartbeat_thread1.daemon = True
-    heartbeat_thread2.daemon = True
-    heartbeat_thread1.start()
-    heartbeat_thread2.start()
+    heartbeat_threads = []
+    for worker in workers:
+        thread = threading.Thread(target=send_heartbeats, args=(worker,))
+        thread.daemon = True
+        thread.start()
+        heartbeat_threads.append(thread)
 
     # Run scheduling cycles
     print("\n[Simulation] Starting scheduling cycles...")
-    for i in range(5):
+    for i in range(simulation_config['scheduling_cycles']):
         print(f"\n--- Scheduling Cycle {i+1} ---")
         controller.run_scheduling_cycle()
-        time.sleep(15)  # Wait longer for ML training to complete
+        time.sleep(simulation_config['scheduling_interval'])
+
+    # Wait for tasks to complete
+    print("\n[Simulation] Waiting for tasks to complete...")
+    while len(controller.completed_tasks) < len(tasks):
+        time.sleep(5)
 
     # Get final system status
     print("\n" + "="*80)
     print("FINAL SYSTEM STATUS")
     print("="*80)
-    controller.get_system_status()
+    status = controller.get_system_status()
+    print(status)
 
     # Print training metrics
     print("\n" + "="*80)
@@ -124,15 +134,23 @@ def run_ml_training_simulation():
             print(f"  Num Batches: {task.metrics.get('num_batches', 'N/A')}")
             print(f"  Num Epochs: {task.metrics.get('num_epochs', 'N/A')}")
 
+    # Optionally save parameter server checkpoint
+    if ps_checkpoint_path:
+        try:
+            controller.ps_save(ps_checkpoint_path)
+        except Exception:
+            pass
+
     # Stop the servers
     print("\n[Simulation] Stopping servers...")
     controller.communicator.stop_server()
-    worker1.communicator.stop_server()
-    worker2.communicator.stop_server()
+    for worker in workers:
+        worker.communicator.stop_server()
 
     print("\n" + "="*80)
     print("SIMULATION COMPLETE")
     print("="*80)
+    return status
 
 
 if __name__ == '__main__':

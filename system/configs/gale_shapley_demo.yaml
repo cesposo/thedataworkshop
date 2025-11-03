@@ -1,0 +1,59 @@
+controller:
+  host: localhost
+  port: 0            # auto-assign free port
+  scheduler: gale-shapley
+
+workers:
+  - name: w1
+    memory: 16
+    flops_per_second: 200
+    network_bandwidth: 1000
+    host: localhost
+    port: 0
+  - name: w2
+    memory: 12
+    flops_per_second: 100
+    network_bandwidth: 500
+    host: localhost
+    port: 0
+  - name: w3
+    memory: 24
+    flops_per_second: 50
+    network_bandwidth: 200
+    host: localhost
+    port: 0
+
+model:
+  name: tiny-lstm
+
+training:
+  learning_rate: 0.001
+  batch_size: 8
+  num_epochs: 1
+  num_samples: 9
+  seq_length: 16
+  num_workers: 3
+
+tasks:
+  - id: tA
+    model_shard_size: 10
+    data_size: 4
+    required_flops: 150
+    priority: 1
+  - id: tB
+    model_shard_size: 8
+    data_size: 2
+    required_flops: 100
+    priority: 1
+  - id: tC
+    model_shard_size: 4
+    data_size: 1
+    required_flops: 50
+    priority: 1
+
+simulation:
+  heartbeat_cycles: 3
+  heartbeat_interval: 1
+  scheduling_cycles: 2
+  scheduling_interval: 1
+

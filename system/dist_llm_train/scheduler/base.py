@@ -18,7 +18,7 @@ class BaseScheduler(ABC):
         Performs the scheduling algorithm.
 
         Returns:
-            A dictionary representing the stable matching, where keys are
-            worker IDs and values are the assigned task IDs.
+            A dictionary representing the matching, where keys are
+            task IDs and values are the assigned worker IDs.
         """
         pass

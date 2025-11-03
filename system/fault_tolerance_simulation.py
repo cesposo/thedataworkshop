@@ -10,21 +10,42 @@ def run_fault_tolerance_simulation():
     print("--- Starting Fault Tolerance Simulation ---")
 
     # 1. Initialize the controller with a short timeout for testing
-    controller = MainController(heartbeat_timeout=2)
+    controller = MainController(host='localhost', port=8100, heartbeat_timeout=2)
 
     # 2. Create and register workers
     workers = [
-        WorkerNode(name="W1-Reliable", memory=24, flops_per_second=300, network_bandwidth=1000),
-        WorkerNode(name="W2-Unreliable", memory=16, flops_per_second=150, network_bandwidth=800),
-        WorkerNode(name="W3-Backup", memory=12, flops_per_second=80, network_bandwidth=500),
+        WorkerNode(name="W1-Reliable", memory=24, flops_per_second=300, network_bandwidth=1000,
+                   host='localhost', port=8101, controller_address='http://localhost:8100'),
+        WorkerNode(name="W2-Unreliable", memory=16, flops_per_second=150, network_bandwidth=800,
+                   host='localhost', port=8102, controller_address='http://localhost:8100'),
+        WorkerNode(name="W3-Backup", memory=12, flops_per_second=80, network_bandwidth=500,
+                   host='localhost', port=8103, controller_address='http://localhost:8100'),
     ]
     for w in workers:
-        controller.register_worker(w)
+        controller.register_worker(
+            w.id,
+            f'http://{w.communicator.host}:{w.communicator.port}',
+            w
+        )
 
     # 3. Create and add tasks
     tasks = [
-        TrainingTask(task_id="TaskA", model_shard_size=14, data_size=2, required_flops=200),
-        TrainingTask(task_id="TaskB", model_shard_size=10, data_size=2, required_flops=120),
+        TrainingTask(
+            task_id="TaskA",
+            model_name="demo-model",
+            model_layer=0,
+            model_shard_size=14,
+            data_size=2,
+            required_flops=200,
+        ),
+        TrainingTask(
+            task_id="TaskB",
+            model_name="demo-model",
+            model_layer=1,
+            model_shard_size=10,
+            data_size=2,
+            required_flops=120,
+        ),
     ]
     for t in tasks:
         controller.add_task(t)
@@ -42,7 +63,8 @@ def run_fault_tolerance_simulation():
 
     # All workers send heartbeats initially
     for worker in controller.workers.values():
-        worker.send_heartbeat()
+        info = worker['info']
+        info.send_heartbeat()
     print("All workers sent a heartbeat.")
 
     # Wait for a period longer than the timeout
@@ -52,7 +74,8 @@ def run_fault_tolerance_simulation():
     # Now, only the reliable workers send another heartbeat
     for w_id, worker in controller.workers.items():
         if "Unreliable" not in w_id:
-            worker.send_heartbeat()
+            info = worker['info']
+            info.send_heartbeat()
             print(f"Worker {w_id} sent a heartbeat.")
 
     # The "Unreliable" worker has now missed its heartbeat.

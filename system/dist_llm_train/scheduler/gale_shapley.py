@@ -1,4 +1,5 @@
 from typing import List, Dict, Tuple
+import logging
 
 from dist_llm_train.task.training_task import TrainingTask
 from .base import BaseScheduler
@@ -24,7 +25,7 @@ class GaleShapleyScheduler(BaseScheduler):
 
     def _prepare_for_matching(self):
         """Calculates the preference lists for all tasks and workers."""
-        print("Calculating preferences for tasks and workers...")
+        self.logger.debug("Calculating preferences for tasks and workers…")
         worker_nodes = [w['info'] for w in self.workers.values()]
         for task in self.tasks.values():
             task.calculate_preferences(worker_nodes)
@@ -38,9 +39,10 @@ class GaleShapleyScheduler(BaseScheduler):
 
         Returns:
             A dictionary representing the stable matching, where keys are
-            worker IDs and values are the assigned task IDs.
+            task IDs and values are the assigned worker IDs.
         """
         self._prepare_for_matching()
+        self.reset()
 
         while self.free_tasks:
             task_id = self.free_tasks[0]
@@ -56,7 +58,7 @@ class GaleShapleyScheduler(BaseScheduler):
             worker_id = task.preferences[self.proposals_made[task_id]]
             worker = self.workers[worker_id]['info']
 
-            print(f"Task {task_id} proposes to Worker {worker_id}.")
+            self.logger.debug(f"Task {task_id} proposes to Worker {worker_id}.")
 
             # The task has now made a proposal to this worker.
             self.proposals_made[task_id] += 1
@@ -65,7 +67,7 @@ class GaleShapleyScheduler(BaseScheduler):
 
             if current_assignment_id is None:
                 # Worker is free, accepts the proposal.
-                print(f"  - Worker {worker_id} is free and accepts.")
+                self.logger.debug(f"  - Worker {worker_id} is free and accepts.")
                 worker.assigned_task_id = task_id
                 task.assigned_worker_id = worker_id
                 self.free_tasks.pop(0)
@@ -77,7 +79,7 @@ class GaleShapleyScheduler(BaseScheduler):
 
                     if new_proposal_rank < current_assignment_rank:
                         # Worker prefers the new task.
-                        print(f"  - Worker {worker_id} prefers Task {task_id} over {current_assignment_id}.")
+                        self.logger.debug(f"  - Worker {worker_id} prefers Task {task_id} over {current_assignment_id}.")
 
                         # The old task becomes free again.
                         old_task = self.tasks[current_assignment_id]
@@ -90,11 +92,22 @@ class GaleShapleyScheduler(BaseScheduler):
                         self.free_tasks.pop(0)
                     else:
                         # Worker rejects the proposal.
-                        print(f"  - Worker {worker_id} rejects Task {task_id}.")
+                        self.logger.debug(f"  - Worker {worker_id} rejects Task {task_id}.")
                 except ValueError:
                     # This case should ideally not be reached if preferences are well-formed.
-                    print(f"  - Worker {worker_id} has no preference for Task {task_id}, rejects.")
+                    self.logger.debug(f"  - Worker {worker_id} has no preference for Task {task_id}, rejects.")
 
-        # Compile the final list of matches from the worker assignments.
-        self.matches = {w['info'].id: w['info'].assigned_task_id for w in self.workers.values() if w['info'].assigned_task_id is not None}
+        # Compile the final list of matches from the task assignments.
+        self.matches = {task.id: task.assigned_worker_id for task in self.tasks.values() if task.assigned_worker_id is not None}
         return self.matches
+
+    def reset(self):
+        """Resets the state of the scheduler, tasks, and workers."""
+        self.proposals_made = {task.id: 0 for task in self.tasks.values()}
+        self.free_tasks = list(self.tasks.keys())
+        self.matches = {}
+        for task in self.tasks.values():
+            task.assigned_worker_id = None
+        for worker in self.workers.values():
+            worker['info'].assigned_task_id = None
+    logger = logging.getLogger("dist_llm_train.scheduler.gale_shapley")

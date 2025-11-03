@@ -13,6 +13,8 @@ class RPCCommunicator(Communicator):
         self.host = host
         self.port = port
         self.server = SimpleXMLRPCServer((self.host, self.port), allow_none=True)
+        if self.port == 0:
+            self.port = self.server.server_address[1]
         self.server_thread = threading.Thread(target=self.server.serve_forever)
         self.server_thread.daemon = True
 
@@ -25,6 +27,11 @@ class RPCCommunicator(Communicator):
         """Stops the RPC server."""
         print(f"Stopping RPC server on {self.host}:{self.port}")
         self.server.shutdown()
+        # Ensure the underlying socket is closed to avoid ResourceWarning
+        try:
+            self.server.server_close()
+        except Exception:
+            pass
         self.server_thread.join()
 
     def register_function(self, function, name):
@@ -53,3 +60,9 @@ class RPCCommunicator(Communicator):
         """Not implemented for this RPC communicator."""
         # TODO: Implement broadcast functionality.
         pass
+"""XML-RPC communication layer.
+
+Provides a thin wrapper around `SimpleXMLRPCServer` for the controller and a
+`ServerProxy` client for sending messages. Using `port=0` binds a free port and
+the actual port is made available via `self.server.server_address[1]`.
+"""

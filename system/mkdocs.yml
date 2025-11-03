@@ -1,0 +1,56 @@
+site_name: dist-llm-train
+site_description: Documentation for the distributed LLM training simulation framework
+theme:
+  name: material
+  features:
+    - navigation.expand
+    - navigation.sections
+    - navigation.tracking
+    - content.code.copy
+    - toc.integrate
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+
+repo_url: https://github.com/your-username/llm_distributed_training
+repo_name: llm_distributed_training
+
+plugins:
+  - search
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          options:
+            docstring_style: google
+            show_signature: true
+            show_source: false
+            merge_init_into_class: true
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+nav:
+  - Overview: docs/overview.md
+  - Architecture: docs/architecture.md
+  - Scheduler Design: docs/scheduler_design.md
+  - Training Protocol: docs/training_protocol.md
+  - Telemetry & Observability: docs/telemetry_observability.md
+  - Persistence & Resume: docs/persistence_and_resume.md
+  - Configuration: docs/configuration.md
+  - CLI Guide: docs/cli_guide.md
+  - Experiments: docs/experiments.md
+  - Testing & Development: docs/testing_and_quality.md
+  - API Reference:
+    - Controller & RPC: docs/api/controller.md
+    - Schedulers: docs/api/schedulers.md
+    - Worker & Tasks: docs/api/worker_and_task.md
+    - Sync: docs/api/sync.md

@@ -1,6 +1,7 @@
 import uuid
 import time
 import threading
+import logging
 from typing import List, Dict, TYPE_CHECKING
 
 from dist_llm_train.communication.rpc import RPCCommunicator
@@ -55,7 +56,13 @@ class WorkerNode:
         self.communicator.register_function(self.receive_task, 'receive_task')
         self.communicator.start_server()
 
-        self.executor = TaskExecutor(self.id, self.communicator, self.controller_address)
+        self.executor = TaskExecutor(
+            self.id,
+            self.communicator,
+            self.controller_address,
+            status_callback=self._on_task_finished,
+        )
+        self.logger = logging.getLogger(f"dist_llm_train.worker.{self.id}")
 
     def __repr__(self) -> str:
         return (f"WorkerNode(id={self.id}, mem={self.memory}GB, gpu='{self.gpu_type}', "
@@ -63,7 +70,7 @@ class WorkerNode:
 
     def send_heartbeat(self):
         """Sends a heartbeat to the controller."""
-        print(f"[Worker {self.id}] Sending heartbeat to controller.")
+        self.logger.info("Sending heartbeat to controller.")
         try:
             self.communicator.send(self.controller_address, {
                 'method': 'heartbeat',
@@ -71,7 +78,7 @@ class WorkerNode:
             })
             self.last_heartbeat = time.time()
         except Exception as e:
-            print(f"[Worker {self.id}] Failed to send heartbeat: {e}")
+            self.logger.error(f"Failed to send heartbeat: {e}")
 
     def receive_task(self, task_dict: Dict):
         """
@@ -94,16 +101,25 @@ class WorkerNode:
             gradient_size=task_dict.get('gradient_size', 0),
             activation_size=task_dict.get('activation_size', 0),
             model_config=task_dict.get('model_config', {}),
-            training_config=task_dict.get('training_config', {})
+            training_config=task_dict.get('training_config', {}),
+            priority=task_dict.get('priority', 0)
         )
 
-        print(f"[Worker {self.id}] Received task: {task.id}")
+        self.logger.info(f"Received task: {task.id}")
         self.assigned_task_id = task.id
         self.status = 'busy'
 
         # Execute the task in a new thread to avoid blocking the RPC server
         task_thread = threading.Thread(target=self.executor.execute_task, args=(task,))
         task_thread.start()
+
+    def _on_task_finished(self, task: 'TrainingTask', success: bool):
+        """Reset worker state after a task finishes."""
+        self.status = 'available'
+        self.assigned_task_id = None
+        self.last_heartbeat = time.time()
+        result = "completed" if success else "failed"
+        self.logger.info(f"Task {task.id} {result}; worker marked available.")
 
     def get_compute_score(self) -> float:
         """A simple score to represent the worker's overall compute power."""
