@@ -4,9 +4,9 @@ Simulation of distributed training with real PyTorch models.
 
 import time
 import threading
+import os
 from dist_llm_train.config import load_config
 from dist_llm_train.logging_utils import configure_logging
-import os
 
 from dist_llm_train.controller.main_controller import MainController
 from dist_llm_train.worker.node import WorkerNode
@@ -14,7 +14,7 @@ from dist_llm_train.task.training_task import TrainingTask
 from dist_llm_train.models.model_loader import ModelLoader
 
 
-def run_ml_training_simulation(config_path: str = 'config.yaml', state_db_path: str = None, ps_checkpoint_path: str = None):
+def run_ml_training_simulation(config_path: str = 'config.yaml', state_db_path: str = None, ps_checkpoint_path: str = None, netem_profile: str = None, netem_seed: int = None):
     """
     Runs a simulation with real ML training using PyTorch.
     """
@@ -26,6 +26,9 @@ def run_ml_training_simulation(config_path: str = 'config.yaml', state_db_path: 
     configure_logging()
     config = load_config(config_path)
     controller_config = config['controller']
+    net_cfg = config.get('network', {})
+    profile = netem_profile if netem_profile is not None else net_cfg.get('profile')
+    seed = netem_seed if netem_seed is not None else net_cfg.get('seed')
     workers_config = config['workers']
     model_config_name = config['model']['name']
     training_config = config['training']
@@ -38,6 +41,8 @@ def run_ml_training_simulation(config_path: str = 'config.yaml', state_db_path: 
         port=controller_config['port'],
         scheduler_name=controller_config.get('scheduler', 'gale-shapley'),
         state_db_path=state_db_path,
+        netem_profile=profile,
+        netem_seed=seed,
     )
 
     # Optionally load parameter server checkpoint
@@ -57,7 +62,9 @@ def run_ml_training_simulation(config_path: str = 'config.yaml', state_db_path: 
             network_bandwidth=worker_conf['network_bandwidth'],
             host=worker_conf['host'],
             port=worker_conf['port'],
-            controller_address=f"http://{controller_config['host']}:{controller_config['port']}"
+            controller_address=f"http://{controller_config['host']}:{controller_config['port']}",
+            netem_profile=profile,
+            netem_seed=seed,
         )
         workers.append(worker)
         controller.register_worker(

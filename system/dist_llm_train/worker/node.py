@@ -2,10 +2,12 @@ import uuid
 import time
 import threading
 import logging
-from typing import List, Dict, TYPE_CHECKING
+from typing import List, Dict, TYPE_CHECKING, Optional
 
 from dist_llm_train.communication.rpc import RPCCommunicator
+from dist_llm_train.communication.chaos import build_communicator
 from .task_executor import TaskExecutor
+from dist_llm_train.communication.communicator import Communicator
 
 # By using TYPE_CHECKING, we can import the TrainingTask for type hints
 # without causing a circular import error at runtime.
@@ -19,7 +21,8 @@ class WorkerNode:
     """
     def __init__(self, name: str, memory: float, flops_per_second: int, network_bandwidth: int,
                  host: str, port: int, controller_address: str,
-                 gpu_type: str = 'N/A', gpu_count: int = 0, pci_e_lanes: int = 0, nvlink_version: str = 'N/A'):
+                 gpu_type: str = 'N/A', gpu_count: int = 0, pci_e_lanes: int = 0, nvlink_version: str = 'N/A',
+                 communicator: Optional[Communicator] = None, netem_profile: Optional[dict] = None, netem_seed: Optional[int] = None):
         """
         Initializes a WorkerNode.
 
@@ -52,9 +55,13 @@ class WorkerNode:
 
         self.last_heartbeat = time.time()
 
-        self.communicator = RPCCommunicator(host, port)
+        if communicator is not None:
+            self.communicator = communicator
+        else:
+            self.communicator = build_communicator(host, port, netem_profile=netem_profile, seed=netem_seed)
         self.communicator.register_function(self.receive_task, 'receive_task')
-        self.communicator.start_server()
+        if hasattr(self.communicator, "start_server"):
+            self.communicator.start_server()
 
         self.executor = TaskExecutor(
             self.id,

@@ -9,6 +9,8 @@ from dist_llm_train.task.training_task import TrainingTask
 from dist_llm_train.models.model_loader import ModelLoader
 from dist_llm_train.data.dataset import create_dummy_dataset
 from dist_llm_train.data.data_loader import DistributedDataLoader
+from dist_llm_train.scheduler.training_history import TrainingHistoryStore, TrainingRun
+from dist_llm_train.compression.compressor import GradientCompressor
 
 
 class TaskExecutor:
@@ -16,7 +18,9 @@ class TaskExecutor:
     Executes a training task on a worker node.
     """
 
-    def __init__(self, worker_id: str, communicator, controller_address: str, status_callback: Optional[Callable[[TrainingTask, bool], None]] = None):
+    def __init__(self, worker_id: str, communicator, controller_address: str,
+                 status_callback: Optional[Callable[[TrainingTask, bool], None]] = None,
+                 history_db_path: str = 'training_history.db'):
         self.worker_id = worker_id
         self.communicator = communicator
         self.controller_address = controller_address
@@ -26,6 +30,15 @@ class TaskExecutor:
         self.criterion = nn.CrossEntropyLoss()
         self.logger = logging.getLogger(f"dist_llm_train.executor.{worker_id}")
         self._status_callback = status_callback
+        self.compressor: Optional[GradientCompressor] = None  # Initialized based on task config
+
+        # Training history for learned preferences
+        self.history_store: Optional[TrainingHistoryStore] = None
+        try:
+            self.history_store = TrainingHistoryStore(history_db_path)
+            self.logger.info(f"Training history store initialized at {history_db_path}")
+        except Exception as e:
+            self.logger.warning(f"Failed to initialize training history store: {e}")
 
     def execute_task(self, task: TrainingTask):
         """
@@ -37,6 +50,7 @@ class TaskExecutor:
         self.logger.info(f"Starting execution of task {task.id}")
         self.logger.info(f"Device: {self.device}")
         success = False
+        start_time = time.time()
 
         try:
             # Determine if this is a real ML task or simulation
@@ -70,6 +84,11 @@ class TaskExecutor:
             except Exception as e:
                 self.logger.error(f"Failed to send task completion notification: {e}")
         finally:
+            # Record training run to history
+            if success:
+                completion_time = time.time() - start_time
+                self._record_training_run(task, completion_time)
+
             if self._status_callback:
                 try:
                     self._status_callback(task, success)
@@ -160,6 +179,16 @@ class TaskExecutor:
             aggr_rule = task.training_config.get('aggregation_rule')
             trim_ratio = float(task.training_config.get('trim_ratio', 0.0))
             compression = task.training_config.get('compression')
+
+            # Initialize gradient compressor
+            if compression and compression != 'none':
+                compression_ratio = float(task.training_config.get('compression_ratio', 0.01))
+                self.compressor = GradientCompressor(method=compression, compression_ratio=compression_ratio)
+                self.logger.info(f"Gradient compression enabled: method={compression}, ratio={compression_ratio}")
+            else:
+                self.compressor = None
+                self.logger.info("Gradient compression disabled")
+
             if aggr_rule or compression:
                 self.communicator.send(self.controller_address, {
                     'method': 'ps_set_aggregation',
@@ -187,6 +216,7 @@ class TaskExecutor:
 
         total_loss = 0.0
         num_batches = 0
+        worker_step = 0  # Track worker's local step for async training
 
         for epoch in range(num_epochs):
             epoch_loss = 0.0
@@ -221,16 +251,35 @@ class TaskExecutor:
                 loss.backward()
 
                 # Collect gradients by parameter name
-                grads = {}
+                grad_tensors = {}
                 for name, p in self.model.named_parameters():
                     if p.grad is not None:
-                        grads[name] = p.grad.detach().cpu().tolist()
+                        grad_tensors[name] = p.grad.detach()
+
+                # Compress gradients if enabled
+                if self.compressor is not None:
+                    grads, metadata = self.compressor.compress(grad_tensors)
+                    # Log compression stats periodically
+                    if (batch_idx + 1) % 50 == 0:
+                        stats = self.compressor.get_compression_stats(grad_tensors, grads)
+                        self.logger.info(
+                            f"Gradient compression: {stats['compression_ratio']:.2f}x, "
+                            f"bandwidth reduction: {stats['bandwidth_reduction']:.1f}%"
+                        )
+                else:
+                    # No compression - convert to lists for RPC
+                    grads = {k: v.cpu().tolist() for k, v in grad_tensors.items()}
+                    metadata = None
 
                 # Synchronous step with parameter server
                 try:
+                    params_to_send = [self.worker_id, grads, lr, worker_step]
+                    if metadata is not None:
+                        params_to_send.append(metadata)
+
                     resp = self.communicator.send(self.controller_address, {
                         'method': 'ps_sync_step',
-                        'params': [self.worker_id, grads, lr]
+                        'params': params_to_send
                     })
                     if resp and 'parameters' in resp:
                         new_state = {k: torch.tensor(v) for k, v in resp['parameters'].items()}
@@ -244,6 +293,7 @@ class TaskExecutor:
                 total_loss += batch_loss
                 epoch_batches += 1
                 num_batches += 1
+                worker_step += 1  # Increment worker step for async training
 
                 if (batch_idx + 1) % 10 == 0 or batch_idx == 0:
                     self.logger.info(
@@ -309,3 +359,60 @@ class TaskExecutor:
             'model_state_dict': self.model.state_dict(),
             'optimizer_state_dict': self.optimizer.state_dict() if self.optimizer else None
         }
+
+    def _record_training_run(self, task: TrainingTask, completion_time_s: float):
+        """
+        Record training run to history store for learned preference modeling.
+
+        Args:
+            task: Completed training task
+            completion_time_s: Total time to complete the task in seconds
+        """
+        if not self.history_store:
+            return
+
+        try:
+            # Extract task features
+            task_features = {
+                'model_shard_size': task.model_shard_size,
+                'data_size': task.data_size,
+                'required_flops': task.required_flops,
+                'total_memory_req': task.get_total_memory_req(),
+                'priority': getattr(task, 'priority', 0)
+            }
+
+            # Extract worker features (from self attributes - these are placeholders)
+            # In real usage, these would come from the actual worker node
+            worker_features = {
+                'flops_per_second': 0.0,  # Placeholder - would need worker info
+                'memory': 0.0,  # Placeholder
+                'network_bandwidth': 0.0,  # Placeholder
+                'gpu_count': 1 if torch.cuda.is_available() else 0
+            }
+
+            # Calculate throughput if available
+            throughput = None
+            if task.metrics and 'num_batches' in task.metrics:
+                num_batches = task.metrics['num_batches']
+                if num_batches > 0 and completion_time_s > 0:
+                    # Rough estimate: batches per second
+                    throughput = num_batches / completion_time_s
+
+            # Create training run record
+            run = TrainingRun(
+                task_id=task.id,
+                worker_id=self.worker_id,
+                task_features=task_features,
+                worker_features=worker_features,
+                completion_time_s=completion_time_s,
+                throughput_tokens_per_sec=throughput,
+                success=True,
+                timestamp=time.time()
+            )
+
+            # Record to database
+            self.history_store.record_run(run)
+            self.logger.debug(f"Recorded training run for task {task.id} to history store")
+
+        except Exception as e:
+            self.logger.warning(f"Failed to record training run: {e}")

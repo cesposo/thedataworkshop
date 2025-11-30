@@ -16,11 +16,15 @@ def main():
     p_basic.add_argument("--config", default=None, help="Path to YAML/JSON config (optional)")
     p_basic.add_argument("--state-db", default=None, help="Path to SQLite DB for controller state snapshots")
     p_basic.add_argument("--ps-checkpoint", default=None, help="Path to PS checkpoint file (load if exists, save on exit)")
+    p_basic.add_argument("--netem-profile", default=None, help="Netem profile name or inline JSON/YAML dict for WAN impairment (optional)")
+    p_basic.add_argument("--netem-seed", type=int, default=None, help="Seed for netem randomness (optional)")
 
     p_ml = sub.add_parser("demo-ml", help="Run the ML training simulation with PyTorch")
     p_ml.add_argument("--config", default="config.yaml", help="Path to YAML/JSON config (default: config.yaml)")
     p_ml.add_argument("--state-db", default=None, help="Path to SQLite DB for controller state snapshots")
     p_ml.add_argument("--ps-checkpoint", default=None, help="Path to PS checkpoint file (load if exists, save on exit)")
+    p_ml.add_argument("--netem-profile", default=None, help="Netem profile name or inline JSON/YAML dict for WAN impairment (optional)")
+    p_ml.add_argument("--netem-seed", type=int, default=None, help="Seed for netem randomness (optional)")
 
     p_submit = sub.add_parser("submit-job", help="Submit a demo job from a JSON/YAML config (runs in-process demo)")
     p_submit.add_argument("--config", required=True, help="Path to job config (JSON or YAML)")
@@ -40,6 +44,8 @@ def main():
     p_exp.add_argument("--output", default="experiments.csv", help="Output CSV path")
     p_exp.add_argument("--window", type=int, default=0, help="EWMA window size (maps to alpha = 2/(N+1))")
     p_exp.add_argument("--profile", default="", help="Profile name label (informational)")
+    p_exp.add_argument("--netem-profile", default=None, help="Netem profile name or inline JSON/YAML dict to apply to runs")
+    p_exp.add_argument("--netem-seed", type=int, default=None, help="Seed for netem randomness (optional)")
 
     # resume subcommand
     p_resume = sub.add_parser("resume", help="Start a controller from the last saved snapshot and requeue tasks")
@@ -57,13 +63,13 @@ def main():
     if args.cmd == "demo-basic":
         from simulation import run_simulation
 
-        _ = run_simulation(args.config, state_db_path=args.state_db, ps_checkpoint_path=args.ps_checkpoint)
+        _ = run_simulation(args.config, state_db_path=args.state_db, ps_checkpoint_path=args.ps_checkpoint, netem_profile=args.netem_profile, netem_seed=args.netem_seed)
         return 0
 
     if args.cmd == "demo-ml":
         from ml_training_simulation import run_ml_training_simulation
 
-        _ = run_ml_training_simulation(args.config, state_db_path=args.state_db, ps_checkpoint_path=args.ps_checkpoint)
+        _ = run_ml_training_simulation(args.config, state_db_path=args.state_db, ps_checkpoint_path=args.ps_checkpoint, netem_profile=args.netem_profile, netem_seed=args.netem_seed)
         return 0
 
     if args.cmd == "submit-job":
@@ -156,6 +162,18 @@ def main():
                 epoch = t.get('epoch')
                 batch = t.get('batch')
                 print(f"  - {wid} | mode={mode} tps={tps} step_s={step} epoch={epoch} batch={batch}")
+        netem = status.get('netem_stats') or {}
+        if netem:
+            print("\nNetem Stats:")
+            ctrl = netem.get('controller') or {}
+            if ctrl:
+                print(f"  controller: sent={ctrl.get('sent')} drop={ctrl.get('dropped')} dup={ctrl.get('duplicated')} bytes={ctrl.get('bytes')} p50ms={ctrl.get('p50_latency_ms')} p95ms={ctrl.get('p95_latency_ms')}")
+            workers = netem.get('workers') or {}
+            if not workers:
+                print("  (no worker netem stats)")
+            else:
+                for wid, s in workers.items():
+                    print(f"  {wid}: sent={s.get('sent')} drop={s.get('dropped')} dup={s.get('duplicated')} bytes={s.get('bytes')} p50ms={s.get('p50_latency_ms')} p95ms={s.get('p95_latency_ms')}")
         return 0
 
     if args.cmd == "run-experiments":
@@ -165,7 +183,16 @@ def main():
         if not cfgs:
             print("No configs resolved")
             return 1
-        out = run_experiments(cfgs, mode=args.mode, repeats=args.repeats, output_csv=args.output, profile=args.profile, window=args.window)
+        out = run_experiments(
+            cfgs,
+            mode=args.mode,
+            repeats=args.repeats,
+            output_csv=args.output,
+            profile=args.profile,
+            window=args.window,
+            netem_profile=args.netem_profile,
+            netem_seed=args.netem_seed,
+        )
         print(f"Wrote {out} with {len(cfgs) * args.repeats} rows")
         return 0
 

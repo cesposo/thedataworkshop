@@ -54,13 +54,20 @@ class ParameterServer:
 
             self.gradient_buffer[worker_id].append(gradients)
 
-    def aggregate_and_update(self, learning_rate: float = 0.001, rule: str = 'mean', trim_ratio: float = 0.0) -> bool:
+    def aggregate_and_update(self, learning_rate: float = 0.001, rule: str = 'mean', trim_ratio: float = 0.0,
+                           krum_f: int = None, bulyan_f: int = None) -> bool:
         """Aggregate gradients and update parameters.
 
         Args:
             learning_rate: Learning rate for parameter update.
-            rule: Aggregation rule. 'mean' or 'trimmed_mean'.
-            trim_ratio: Fraction [0,1] of gradients to trim in total (half from each side) for 'trimmed_mean'.
+            rule: Aggregation rule. Options:
+                - 'mean': Simple averaging (no Byzantine tolerance)
+                - 'trimmed_mean': Trim extremes, moderate Byzantine tolerance
+                - 'krum': Multi-Krum selection, strong Byzantine tolerance
+                - 'bulyan': Bulyan aggregation, strongest Byzantine tolerance
+            trim_ratio: Fraction [0,1] of gradients to trim in total for 'trimmed_mean'.
+            krum_f: Number of Byzantine workers to tolerate for Krum (default: n//4)
+            bulyan_f: Number of Byzantine workers to tolerate for Bulyan (default: n//4)
 
         Returns:
             True if update was successful, False otherwise.
@@ -69,7 +76,7 @@ class ParameterServer:
             if not self.gradient_buffer:
                 return False
 
-            # Aggregate gradients (simple averaging)
+            # Aggregate gradients
             aggregated_grads = {}
 
             for worker_id, grad_list in self.gradient_buffer.items():
@@ -86,22 +93,96 @@ class ParameterServer:
 
             # Robust aggregation
             def _aggregate(param_name: str, grad_list):
+                n = len(grad_list)
                 stack = torch.stack(grad_list)
-                if rule == 'mean' or len(grad_list) < 3:
+
+                if rule == 'mean' or n < 3:
                     return torch.mean(stack, dim=0)
-                if rule == 'trimmed_mean':
+
+                elif rule == 'trimmed_mean':
                     # Trim extremes per element
-                    # k is number to trim from each side; trim_ratio is total fraction trimmed
-                    k = int((trim_ratio * len(grad_list)) // 2)
+                    k = int((trim_ratio * n) // 2)
                     if k == 0:
                         return torch.mean(stack, dim=0)
-                    # Sort along worker dimension for each element
                     sorted_vals, _ = torch.sort(stack, dim=0)
-                    trimmed = sorted_vals[k:len(grad_list)-k]
+                    trimmed = sorted_vals[k:n-k]
                     if trimmed.numel() == 0:
                         return torch.mean(stack, dim=0)
                     return torch.mean(trimmed, dim=0)
-                # Fallback for unsupported rules
+
+                elif rule == 'krum':
+                    # Multi-Krum: Select m most representative gradients
+                    f = krum_f if krum_f is not None else max(1, n // 4)
+                    m = n - f - 2  # Number of gradients to select
+                    if m < 1:
+                        return torch.mean(stack, dim=0)
+
+                    # Flatten gradients for distance computation
+                    flattened = [g.flatten() for g in grad_list]
+
+                    # Compute pairwise distances
+                    scores = []
+                    for i in range(n):
+                        # Sum of squared distances to n-f-2 nearest neighbors
+                        distances = []
+                        for j in range(n):
+                            if i != j:
+                                dist = torch.sum((flattened[i] - flattened[j]) ** 2).item()
+                                distances.append(dist)
+                        # Score = sum of n-f-2 smallest distances
+                        distances.sort()
+                        score = sum(distances[:n-f-2])
+                        scores.append((score, i))
+
+                    # Select m gradients with smallest scores
+                    scores.sort()
+                    selected_indices = [idx for _, idx in scores[:m]]
+                    selected = stack[selected_indices]
+                    return torch.mean(selected, dim=0)
+
+                elif rule == 'bulyan':
+                    # Bulyan: Krum selection + trimmed mean
+                    f = bulyan_f if bulyan_f is not None else max(1, n // 4)
+                    theta = n - 2 * f  # Number of gradients to select via Krum
+
+                    if theta < 1 or n < 4 * f + 3:
+                        # Fall back to mean if not enough workers
+                        return torch.mean(stack, dim=0)
+
+                    # Flatten gradients for distance computation
+                    flattened = [g.flatten() for g in grad_list]
+
+                    # Compute Krum scores
+                    scores = []
+                    for i in range(n):
+                        distances = []
+                        for j in range(n):
+                            if i != j:
+                                dist = torch.sum((flattened[i] - flattened[j]) ** 2).item()
+                                distances.append(dist)
+                        distances.sort()
+                        score = sum(distances[:n-f-2])
+                        scores.append((score, i))
+
+                    # Select theta gradients with smallest scores
+                    scores.sort()
+                    selected_indices = [idx for _, idx in scores[:theta]]
+                    selected_grads = [grad_list[i] for i in selected_indices]
+
+                    # Apply trimmed mean to selected gradients
+                    selected_stack = torch.stack(selected_grads)
+                    beta = 2 * f  # Trim 2f gradients total
+                    k = beta // 2
+                    if k >= len(selected_grads) // 2:
+                        return torch.mean(selected_stack, dim=0)
+
+                    sorted_vals, _ = torch.sort(selected_stack, dim=0)
+                    trimmed = sorted_vals[k:len(selected_grads)-k]
+                    if trimmed.numel() == 0:
+                        return torch.mean(selected_stack, dim=0)
+                    return torch.mean(trimmed, dim=0)
+
+                # Fallback
                 return torch.mean(stack, dim=0)
 
             # Apply update
@@ -164,12 +245,245 @@ class ParameterServer:
             return len(self.gradient_buffer)
 
 
+class BoundedAsyncCoordinator:
+    """
+    Coordinates asynchronous training across workers with bounded staleness.
+
+    Workers submit gradients without barriers. Gradients that are too stale
+    (based on max_staleness) are rejected to prevent divergence.
+    This design handles heterogeneous and volatile environments where workers
+    have different speeds and may fail intermittently.
+    """
+
+    def __init__(self, num_workers: int, max_staleness: int = 50, window_size: int = None, max_wait_s: float = None,
+                 adaptive_staleness: bool = True, min_staleness: int = 5, max_staleness_multiplier: float = 10.0):
+        """
+        Initialize async coordinator.
+
+        Args:
+            num_workers: Expected number of workers
+            max_staleness: Base maximum staleness (in steps) for gradients (default: 50, was 5)
+            window_size: Unused in async mode, kept for API compatibility
+            max_wait_s: Unused in async mode, kept for API compatibility
+            adaptive_staleness: Enable adaptive staleness based on worker speed (default: True)
+            min_staleness: Minimum staleness bound (default: 5)
+            max_staleness_multiplier: Maximum multiplier for slow workers (default: 10.0)
+        """
+        self.num_workers = num_workers
+        self.max_staleness = max_staleness  # Base staleness for normal workers
+        self.window_size = window_size or num_workers  # Kept for compatibility
+        self.max_wait_s = max_wait_s  # Kept for compatibility
+
+        # Adaptive staleness configuration
+        self.adaptive_staleness = adaptive_staleness
+        self.min_staleness = min_staleness
+        self.max_staleness_multiplier = max_staleness_multiplier
+
+        self.global_step = 0  # Global model step counter
+        self.worker_steps = {}  # {worker_id: last_step_number}
+        self.gradient_buffer = []  # List of (worker_id, gradients, staleness) tuples
+        self.lock = threading.Lock()
+
+        # Worker speed tracking for adaptive staleness
+        self.worker_submission_times = {}  # {worker_id: [timestamps]}
+        self.worker_speed_estimates = {}  # {worker_id: speed_multiplier}
+        self.worker_staleness_bounds = {}  # {worker_id: max_staleness}
+
+        # Statistics
+        self.total_gradients_received = 0
+        self.total_gradients_rejected = 0
+        self.barrier_count = 0  # Kept for compatibility with existing code
+
+    def wait_for_all(self, worker_id: str) -> bool:
+        """
+        Compatibility method for async coordinator.
+        In async mode, workers don't wait at barriers - they return immediately.
+
+        Args:
+            worker_id: ID of the worker
+
+        Returns:
+            True immediately (no blocking)
+        """
+        # No blocking in async mode
+        return True
+
+    def _update_worker_speed(self, worker_id: str):
+        """Update worker speed estimate based on submission frequency.
+
+        Args:
+            worker_id: ID of the worker
+        """
+        import time
+
+        current_time = time.time()
+
+        # Track submission times (keep last 10)
+        if worker_id not in self.worker_submission_times:
+            self.worker_submission_times[worker_id] = []
+
+        self.worker_submission_times[worker_id].append(current_time)
+        if len(self.worker_submission_times[worker_id]) > 10:
+            self.worker_submission_times[worker_id].pop(0)
+
+        # Estimate speed from submission frequency (need at least 3 samples)
+        if len(self.worker_submission_times[worker_id]) >= 3:
+            times = self.worker_submission_times[worker_id]
+            intervals = [times[i+1] - times[i] for i in range(len(times)-1)]
+            avg_interval = sum(intervals) / len(intervals)
+
+            # Compare to median interval across all workers
+            all_intervals = []
+            for wid, timestamps in self.worker_submission_times.items():
+                if len(timestamps) >= 2:
+                    worker_intervals = [timestamps[i+1] - timestamps[i] for i in range(len(timestamps)-1)]
+                    all_intervals.extend(worker_intervals)
+
+            if all_intervals:
+                # Median interval represents "normal" speed
+                all_intervals.sort()
+                median_interval = all_intervals[len(all_intervals) // 2]
+
+                # Speed multiplier: fast worker has low interval, slow worker has high interval
+                if median_interval > 0:
+                    speed_multiplier = median_interval / max(avg_interval, 0.001)
+                    # Clamp to reasonable range [0.1, 10.0]
+                    speed_multiplier = max(0.1, min(10.0, speed_multiplier))
+                    self.worker_speed_estimates[worker_id] = speed_multiplier
+
+    def _get_worker_staleness_bound(self, worker_id: str) -> int:
+        """Get adaptive staleness bound for a specific worker.
+
+        Fast workers get tighter bounds, slow workers get looser bounds.
+
+        Args:
+            worker_id: ID of the worker
+
+        Returns:
+            Maximum staleness for this worker
+        """
+        if not self.adaptive_staleness:
+            return self.max_staleness
+
+        # If we don't have speed estimate yet, use base staleness
+        if worker_id not in self.worker_speed_estimates:
+            return self.max_staleness
+
+        speed = self.worker_speed_estimates[worker_id]
+
+        # Adaptive staleness formula:
+        # Slow workers (speed < 1.0) get higher staleness tolerance
+        # Fast workers (speed > 1.0) get lower staleness tolerance
+        # Formula: staleness = base_staleness / speed
+        adaptive_bound = int(self.max_staleness / speed)
+
+        # Clamp to reasonable range
+        adaptive_bound = max(self.min_staleness, adaptive_bound)
+        adaptive_bound = min(int(self.max_staleness * self.max_staleness_multiplier), adaptive_bound)
+
+        # Cache for statistics
+        self.worker_staleness_bounds[worker_id] = adaptive_bound
+
+        return adaptive_bound
+
+    def submit_gradients(self, worker_id: str, gradients: Dict[str, Any], worker_step: int = None) -> bool:
+        """
+        Submit gradients from a worker (non-blocking).
+        Gradients are checked for staleness and rejected if too old.
+
+        With adaptive staleness, slow workers are given higher staleness tolerance.
+
+        Args:
+            worker_id: ID of the worker
+            gradients: Gradient dictionary
+            worker_step: Worker's local step number (optional, uses global step if not provided)
+
+        Returns:
+            True if gradients accepted, False if rejected due to staleness
+        """
+        with self.lock:
+            self.total_gradients_received += 1
+
+            # If worker_step not provided, assume current step
+            if worker_step is None:
+                worker_step = self.global_step
+
+            # Update worker speed estimate (for adaptive staleness)
+            if self.adaptive_staleness:
+                self._update_worker_speed(worker_id)
+
+            # Calculate staleness
+            staleness = self.global_step - worker_step
+
+            # Get adaptive staleness bound for this worker
+            worker_max_staleness = self._get_worker_staleness_bound(worker_id)
+
+            # Reject if too stale
+            if staleness > worker_max_staleness:
+                self.total_gradients_rejected += 1
+                return False
+
+            # Accept gradients
+            self.gradient_buffer.append((worker_id, gradients, staleness))
+            self.worker_steps[worker_id] = worker_step
+
+            return True
+
+    def get_and_clear_gradients(self) -> list:
+        """
+        Get all accumulated gradients and clear the buffer.
+
+        Returns:
+            List of (worker_id, gradients, staleness) tuples
+        """
+        with self.lock:
+            gradients = self.gradient_buffer[:]
+            self.gradient_buffer.clear()
+            if gradients:
+                self.global_step += 1
+                self.barrier_count += 1  # For compatibility
+            return gradients
+
+    def get_statistics(self) -> Dict[str, Any]:
+        """
+        Get statistics about async training.
+
+        Returns:
+            Dictionary with statistics including adaptive staleness info
+        """
+        with self.lock:
+            rejection_rate = 0.0
+            if self.total_gradients_received > 0:
+                rejection_rate = self.total_gradients_rejected / self.total_gradients_received
+
+            stats = {
+                'global_step': self.global_step,
+                'total_received': self.total_gradients_received,
+                'total_rejected': self.total_gradients_rejected,
+                'rejection_rate': rejection_rate,
+                'active_workers': len(self.worker_steps),
+                'pending_gradients': len(self.gradient_buffer),
+                'adaptive_staleness_enabled': self.adaptive_staleness,
+                'base_max_staleness': self.max_staleness
+            }
+
+            # Add per-worker adaptive staleness info
+            if self.adaptive_staleness and self.worker_speed_estimates:
+                stats['worker_speeds'] = self.worker_speed_estimates.copy()
+                stats['worker_staleness_bounds'] = self.worker_staleness_bounds.copy()
+
+            return stats
+
+
 class SimpleSyncCoordinator:
     """
     Coordinates synchronous training across workers.
 
     Workers wait at barriers until all have completed a step,
     then gradients are aggregated and parameters are updated.
+
+    DEPRECATED: Use BoundedAsyncCoordinator for heterogeneous/volatile environments.
+    This synchronous implementation suffers from the straggler problem in WAN settings.
     """
 
     def __init__(self, num_workers: int, window_size: int = None, max_wait_s: float = None):

@@ -3,6 +3,16 @@ controller:
   host: localhost
   port: 8000
   scheduler: priority
+  use_lattice: false  # Enable lattice-aware scheduling
+  max_lattice_size: 100  # Maximum stable matchings to enumerate
+  lattice_rebuild_interval: 300  # Seconds before preferences considered stale
+
+# Learned preference configuration
+preferences:
+  mode: heuristic  # 'heuristic' or 'learned'
+  model_path: null  # Path to trained PerformancePredictor model (e.g., 'models/predictor.pkl')
+  objective: throughput  # 'throughput', 'latency', or 'balanced'
+  history_db: training_history.db  # SQLite database for training run history
 
 # Worker configuration
 workers:

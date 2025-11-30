@@ -1,0 +1,10 @@
+scenario_name,challenge_name,status,success,total_steps,duration_s,steps_per_second,total_gradients_submitted,total_gradients_accepted,total_gradients_rejected,rejection_rate,compression_ratio,bandwidth_saved_percent,active_workers,use_async,compression_method,max_staleness
+simple_dnn,baseline,completed,True,50,0.0006003379821777344,92020.71083808687,200,200,0,0.0,1.0,0.0,4,False,none,0
+simple_dnn,wan_bandwidth,completed,False,53,0.0004513263702392578,129847.02803738318,200,53,147,0.735,100.0,99.0,4,True,topk,3
+simple_dnn,heterogeneous,completed,False,60,0.00039124488830566406,168220.7486631016,135,60,75,0.5555555555555556,100.0,99.0,5,True,topk,10
+moderate_dnn,baseline,completed,True,50,0.0004961490631103516,106400.40588533739,200,200,0,0.0,1.0,0.0,4,False,none,0
+moderate_dnn,wan_bandwidth,completed,False,53,0.00043773651123046875,129771.2270869819,200,53,147,0.735,100.0,99.0,4,True,topk,3
+moderate_dnn,heterogeneous,completed,False,60,0.0003840923309326172,169352.78600269178,140,60,80,0.5714285714285714,100.0,99.0,5,True,topk,10
+large_dnn,baseline,completed,True,50,0.000507354736328125,103563.06172839506,200,200,0,0.0,1.0,0.0,4,False,none,0
+large_dnn,wan_bandwidth,completed,False,53,0.00043654441833496094,133512.37957957957,200,53,147,0.735,100.0,99.0,4,True,topk,3
+large_dnn,heterogeneous,completed,False,60,0.0003757476806640625,173199.06400550585,136,60,76,0.5588235294117647,100.0,99.0,5,True,topk,10

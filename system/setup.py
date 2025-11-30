@@ -13,7 +13,7 @@ setup(
     description="Democratizing Large Language Model Training in Open Science Environments",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/cesposo/llm_distributed_training",
+    url="https://github.com/cesposo/thedataworkshop",
     packages=find_packages(),
     classifiers=[
         "Development Status :: 3 - Alpha",

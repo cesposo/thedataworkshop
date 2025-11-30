@@ -1,0 +1,1526 @@
+{
+  "timestamp": "2025-11-19T00:52:43.390929",
+  "num_experiments": 28,
+  "results": [
+    {
+      "scenario_name": "simple_dnn",
+      "challenge_name": "baseline",
+      "status": "completed",
+      "metrics": {
+        "total_steps": 200,
+        "total_time_s": 0.0019712448120117188,
+        "steps_per_second": 101458.73246250604,
+        "total_bytes_sent": 754974400,
+        "total_bytes_received": 0,
+        "average_bandwidth_mbps": 0.0,
+        "average_latency_ms": 0.0,
+        "total_gradients_submitted": 800,
+        "total_gradients_accepted": 800,
+        "total_gradients_rejected": 0,
+        "rejection_rate": 0.0,
+        "average_staleness": 0.0,
+        "total_compression_ratio": 1.0,
+        "bandwidth_saved_percent": 0.0,
+        "total_failures": 0,
+        "failures_by_type": {},
+        "active_workers": 4,
+        "total_worker_steps": {
+          "worker_0": 200,
+          "worker_1": 200,
+          "worker_2": 200,
+          "worker_3": 200
+        },
+        "worker_acceptance_rates": {
+          "worker_0": 1.0,
+          "worker_1": 1.0,
+          "worker_2": 1.0,
+          "worker_3": 1.0
+        },
+        "final_loss": null,
+        "converged": false
+      },
+      "success_criteria_met": true,
+      "failure_reasons": [],
+      "start_time": 1763513563.339176,
+      "end_time": 1763513563.3411973,
+      "duration_s": 0.002021312713623047,
+      "config_snapshot": {
+        "use_async": false,
+        "compression_method": "none",
+        "compression_ratio": 1.0,
+        "max_staleness": 0,
+        "aggregation_rule": "trimmed_mean",
+        "trim_ratio": 0.1
+      }
+    },
+    {
+      "scenario_name": "simple_dnn",
+      "challenge_name": "wan_bandwidth",
+      "status": "completed",
+      "metrics": {
+        "total_steps": 203,
+        "total_time_s": 0.0016055107116699219,
+        "steps_per_second": 126439.51767151768,
+        "total_bytes_sent": 7549600,
+        "total_bytes_received": 0,
+        "average_bandwidth_mbps": 0.0,
+        "average_latency_ms": 0.0,
+        "total_gradients_submitted": 800,
+        "total_gradients_accepted": 203,
+        "total_gradients_rejected": 597,
+        "rejection_rate": 0.74625,
+        "average_staleness": 2.23875,
+        "total_compression_ratio": 100.0,
+        "bandwidth_saved_percent": 99.0,
+        "total_failures": 0,
+        "failures_by_type": {},
+        "active_workers": 4,
+        "total_worker_steps": {
+          "worker_0": 200,
+          "worker_1": 200,
+          "worker_2": 200,
+          "worker_3": 200
+        },
+        "worker_acceptance_rates": {
+          "worker_0": 1.0,
+          "worker_1": 0.005,
+          "worker_2": 0.005,
+          "worker_3": 0.005
+        },
+        "final_loss": null,
+        "converged": false
+      },
+      "success_criteria_met": false,
+      "failure_reasons": [
+        "High rejection rate: 74.6% > 5.0%"
+      ],
+      "start_time": 1763513563.3412032,
+      "end_time": 1763513563.3428562,
+      "duration_s": 0.0016529560089111328,
+      "config_snapshot": {
+        "use_async": true,
+        "compression_method": "topk",
+        "compression_ratio": 0.01,
+        "max_staleness": 3,
+        "aggregation_rule": "trimmed_mean",
+        "trim_ratio": 0.1
+      }
+    },
+    {
+      "scenario_name": "simple_dnn",
+      "challenge_name": "wan_latency",
+      "status": "completed",
+      "metrics": {
+        "total_steps": 205,
+        "total_time_s": 0.0015978813171386719,
+        "steps_per_second": 128294.88510892271,
+        "total_bytes_sent": 37748000,
+        "total_bytes_received": 0,
+        "average_bandwidth_mbps": 0.0,
+        "average_latency_ms": 0.0,
+        "total_gradients_submitted": 800,
+        "total_gradients_accepted": 205,
+        "total_gradients_rejected": 595,
+        "rejection_rate": 0.74375,
+        "average_staleness": 3.71875,
+        "total_compression_ratio": 20.0,
+        "bandwidth_saved_percent": 95.0,
+        "total_failures": 0,
+        "failures_by_type": {},
+        "active_workers": 4,
+        "total_worker_steps": {
+          "worker_0": 200,
+          "worker_1": 200,
+          "worker_2": 200,
+          "worker_3": 200
+        },
+        "worker_acceptance_rates": {
+          "worker_0": 1.0,
+          "worker_1": 0.01,
+          "worker_2": 0.01,
+          "worker_3": 0.005
+        },
+        "final_loss": null,
+        "converged": false
+      },
+      "success_criteria_met": false,
+      "failure_reasons": [
+        "High rejection rate: 74.4% > 10.0%"
+      ],
+      "start_time": 1763513563.3428605,
+      "end_time": 1763513563.3444939,
+      "duration_s": 0.0016334056854248047,
+      "config_snapshot": {
+        "use_async": true,
+        "compression_method": "topk",
+        "compression_ratio": 0.05,
+        "max_staleness": 5,
+        "aggregation_rule": "trimmed_mean",
+        "trim_ratio": 0.1
+      }
+    },
+    {
+      "scenario_name": "simple_dnn",
+      "challenge_name": "heterogeneous",
+      "status": "completed",
+      "metrics": {
+        "total_steps": 210,
+        "total_time_s": 0.0014281272888183594,
+        "steps_per_second": 147045.7161936561,
+        "total_bytes_sent": 5350779,
+        "total_bytes_received": 0,
+        "average_bandwidth_mbps": 0.0,
+        "average_latency_ms": 0.0,
+        "total_gradients_submitted": 567,
+        "total_gradients_accepted": 210,
+        "total_gradients_rejected": 357,
+        "rejection_rate": 0.6296296296296297,
+        "average_staleness": 6.296296296296297,
+        "total_compression_ratio": 100.0,
+        "bandwidth_saved_percent": 99.0,
+        "total_failures": 0,
+        "failures_by_type": {},
+        "active_workers": 5,
+        "total_worker_steps": {
+          "fast_gpu": 200,
+          "standard_gpu": 200,
+          "slow_gpu": 103,
+          "cpu_worker": 40,
+          "edge_worker": 24
+        },
+        "worker_acceptance_rates": {
+          "fast_gpu": 1.0,
+          "standard_gpu": 0.03,
+          "slow_gpu": 0.009708737864077669,
+          "cpu_worker": 0.075,
+          "edge_worker": 0.0
+        },
+        "final_loss": null,
+        "converged": false
+      },
+      "success_criteria_met": false,
+      "failure_reasons": [
+        "High rejection rate: 63.0% > 15.0%"
+      ],
+      "start_time": 1763513563.344498,
+      "end_time": 1763513563.3459582,
+      "duration_s": 0.0014603137969970703,
+      "config_snapshot": {
+        "use_async": true,
+        "compression_method": "topk",
+        "compression_ratio": 0.01,
+        "max_staleness": 10,
+        "aggregation_rule": "trimmed_mean",
+        "trim_ratio": 0.1
+      }
+    },
+    {
+      "scenario_name": "simple_dnn",
+      "challenge_name": "unreliable",
+      "status": "completed",
+      "metrics": {
+        "total_steps": 133,
+        "total_time_s": 0.0013418197631835938,
+        "steps_per_second": 99119.12437810945,
+        "total_bytes_sent": 4114532,
+        "total_bytes_received": 0,
+        "average_bandwidth_mbps": 0.0,
+        "average_latency_ms": 0.0,
+        "total_gradients_submitted": 436,
+        "total_gradients_accepted": 133,
+        "total_gradients_rejected": 303,
+        "rejection_rate": 0.694954128440367,
+        "average_staleness": 5.559633027522936,
+        "total_compression_ratio": 100.0,
+        "bandwidth_saved_percent": 99.0,
+        "total_failures": 0,
+        "failures_by_type": {},
+        "active_workers": 4,
+        "total_worker_steps": {
+          "worker_0": 125,
+          "worker_1": 94,
+          "worker_2": 106,
+          "worker_3": 111
+        },
+        "worker_acceptance_rates": {
+          "worker_0": 0.912,
+          "worker_1": 0.031914893617021274,
+          "worker_2": 0.04716981132075472,
+          "worker_3": 0.0990990990990991
+        },
+        "final_loss": null,
+        "converged": false
+      },
+      "success_criteria_met": false,
+      "failure_reasons": [
+        "Insufficient steps: 133 < 250",
+        "High rejection rate: 69.5% > 20.0%"
+      ],
+      "start_time": 1763513563.3459618,
+      "end_time": 1763513563.3473322,
+      "duration_s": 0.0013704299926757812,
+      "config_snapshot": {
+        "use_async": true,
+        "compression_method": "topk",
+        "compression_ratio": 0.01,
+        "max_staleness": 8,
+        "aggregation_rule": "trimmed_mean",
+        "trim_ratio": 0.1
+      }
+    },
+    {
+      "scenario_name": "simple_dnn",
+      "challenge_name": "churn",
+      "status": "completed",
+      "metrics": {
+        "total_steps": 195,
+        "total_time_s": 0.0016396045684814453,
+        "steps_per_second": 118931.11531190926,
+        "total_bytes_sent": 4954425,
+        "total_bytes_received": 0,
+        "average_bandwidth_mbps": 0.0,
+        "average_latency_ms": 0.0,
+        "total_gradients_submitted": 525,
+        "total_gradients_accepted": 195,
+        "total_gradients_rejected": 330,
+        "rejection_rate": 0.6285714285714286,
+        "average_staleness": 6.285714285714286,
+        "total_compression_ratio": 100.0,
+        "bandwidth_saved_percent": 99.0,
+        "total_failures": 0,
+        "failures_by_type": {},
+        "active_workers": 6,
+        "total_worker_steps": {
+          "worker_0": 185,
+          "worker_1": 79,
+          "worker_2": 131,
+          "worker_3": 47,
+          "worker_4": 30,
+          "worker_5": 53
+        },
+        "worker_acceptance_rates": {
+          "worker_0": 1.0,
+          "worker_1": 0.08860759493670886,
+          "worker_2": 0.022900763358778626,
+          "worker_3": 0.0,
+          "worker_4": 0.0,
+          "worker_5": 0.0
+        },
+        "final_loss": null,
+        "converged": false
+      },
+      "success_criteria_met": false,
+      "failure_reasons": [
+        "Insufficient steps: 195 < 300",
+        "High rejection rate: 62.9% > 25.0%"
+      ],
+      "start_time": 1763513563.3473368,
+      "end_time": 1763513563.349025,
+      "duration_s": 0.001688241958618164,
+      "config_snapshot": {
+        "use_async": true,
+        "compression_method": "topk",
+        "compression_ratio": 0.01,
+        "max_staleness": 10,
+        "aggregation_rule": "trimmed_mean",
+        "trim_ratio": 0.1
+      }
+    },
+    {
+      "scenario_name": "simple_dnn",
+      "challenge_name": "byzantine",
+      "status": "completed",
+      "metrics": {
+        "total_steps": 205,
+        "total_time_s": 0.0020837783813476562,
+        "steps_per_second": 98378.98398169337,
+        "total_bytes_sent": 45722265,
+        "total_bytes_received": 0,
+        "average_bandwidth_mbps": 0.0,
+        "average_latency_ms": 0.0,
+        "total_gradients_submitted": 969,
+        "total_gradients_accepted": 205,
+        "total_gradients_rejected": 764,
+        "rejection_rate": 0.7884416924664602,
+        "average_staleness": 3.9422084623323013,
+        "total_compression_ratio": 20.0,
+        "bandwidth_saved_percent": 95.0,
+        "total_failures": 0,
+        "failures_by_type": {},
+        "active_workers": 5,
+        "total_worker_steps": {
+          "honest_1": 200,
+          "honest_2": 200,
+          "honest_3": 169,
+          "byzantine_1": 200,
+          "byzantine_2": 200
+        },
+        "worker_acceptance_rates": {
+          "honest_1": 1.0,
+          "honest_2": 0.01,
+          "honest_3": 0.005917159763313609,
+          "byzantine_1": 0.005,
+          "byzantine_2": 0.005
+        },
+        "final_loss": null,
+        "converged": false
+      },
+      "success_criteria_met": false,
+      "failure_reasons": [
+        "Insufficient steps: 205 < 350",
+        "High rejection rate: 78.8% > 30.0%"
+      ],
+      "start_time": 1763513563.3490298,
+      "end_time": 1763513563.3511481,
+      "duration_s": 0.002118349075317383,
+      "config_snapshot": {
+        "use_async": true,
+        "compression_method": "topk",
+        "compression_ratio": 0.05,
+        "max_staleness": 5,
+        "aggregation_rule": "trimmed_mean",
+        "trim_ratio": 0.1
+      }
+    },
+    {
+      "scenario_name": "moderate_dnn",
+      "challenge_name": "baseline",
+      "status": "completed",
+      "metrics": {
+        "total_steps": 200,
+        "total_time_s": 0.0019333362579345703,
+        "steps_per_second": 103448.11937353558,
+        "total_bytes_sent": 2038431200,
+        "total_bytes_received": 0,
+        "average_bandwidth_mbps": 0.0,
+        "average_latency_ms": 0.0,
+        "total_gradients_submitted": 800,
+        "total_gradients_accepted": 800,
+        "total_gradients_rejected": 0,
+        "rejection_rate": 0.0,
+        "average_staleness": 0.0,
+        "total_compression_ratio": 1.0,
+        "bandwidth_saved_percent": 0.0,
+        "total_failures": 0,
+        "failures_by_type": {},
+        "active_workers": 4,
+        "total_worker_steps": {
+          "worker_0": 200,
+          "worker_1": 200,
+          "worker_2": 200,
+          "worker_3": 200
+        },
+        "worker_acceptance_rates": {
+          "worker_0": 1.0,
+          "worker_1": 1.0,
+          "worker_2": 1.0,
+          "worker_3": 1.0
+        },
+        "final_loss": null,
+        "converged": false
+      },
+      "success_criteria_met": true,
+      "failure_reasons": [],
+      "start_time": 1763513563.3511577,
+      "end_time": 1763513563.3531215,
+      "duration_s": 0.0019638538360595703,
+      "config_snapshot": {
+        "use_async": false,
+        "compression_method": "none",
+        "compression_ratio": 1.0,
+        "max_staleness": 0,
+        "aggregation_rule": "trimmed_mean",
+        "trim_ratio": 0.1
+      }
+    },
+    {
+      "scenario_name": "moderate_dnn",
+      "challenge_name": "wan_bandwidth",
+      "status": "completed",
+      "metrics": {
+        "total_steps": 203,
+        "total_time_s": 0.0019538402557373047,
+        "steps_per_second": 103897.95143380109,
+        "total_bytes_sent": 20384000,
+        "total_bytes_received": 0,
+        "average_bandwidth_mbps": 0.0,
+        "average_latency_ms": 0.0,
+        "total_gradients_submitted": 800,
+        "total_gradients_accepted": 203,
+        "total_gradients_rejected": 597,
+        "rejection_rate": 0.74625,
+        "average_staleness": 2.23875,
+        "total_compression_ratio": 100.0,
+        "bandwidth_saved_percent": 99.0,
+        "total_failures": 0,
+        "failures_by_type": {},
+        "active_workers": 4,
+        "total_worker_steps": {
+          "worker_0": 200,
+          "worker_1": 200,
+          "worker_2": 200,
+          "worker_3": 200
+        },
+        "worker_acceptance_rates": {
+          "worker_0": 1.0,
+          "worker_1": 0.005,
+          "worker_2": 0.005,
+          "worker_3": 0.005
+        },
+        "final_loss": null,
+        "converged": false
+      },
+      "success_criteria_met": false,
+      "failure_reasons": [
+        "High rejection rate: 74.6% > 5.0%"
+      ],
+      "start_time": 1763513563.3531253,
+      "end_time": 1763513563.3551114,
+      "duration_s": 0.0019860267639160156,
+      "config_snapshot": {
+        "use_async": true,
+        "compression_method": "topk",
+        "compression_ratio": 0.01,
+        "max_staleness": 3,
+        "aggregation_rule": "trimmed_mean",
+        "trim_ratio": 0.1
+      }
+    },
+    {
+      "scenario_name": "moderate_dnn",
+      "challenge_name": "wan_latency",
+      "status": "completed",
+      "metrics": {
+        "total_steps": 205,
+        "total_time_s": 0.002010345458984375,
+        "steps_per_second": 101972.52371916508,
+        "total_bytes_sent": 101920800,
+        "total_bytes_received": 0,
+        "average_bandwidth_mbps": 0.0,
+        "average_latency_ms": 0.0,
+        "total_gradients_submitted": 800,
+        "total_gradients_accepted": 205,
+        "total_gradients_rejected": 595,
+        "rejection_rate": 0.74375,
+        "average_staleness": 3.71875,
+        "total_compression_ratio": 20.0,
+        "bandwidth_saved_percent": 95.0,
+        "total_failures": 0,
+        "failures_by_type": {},
+        "active_workers": 4,
+        "total_worker_steps": {
+          "worker_0": 200,
+          "worker_1": 200,
+          "worker_2": 200,
+          "worker_3": 200
+        },
+        "worker_acceptance_rates": {
+          "worker_0": 1.0,
+          "worker_1": 0.01,
+          "worker_2": 0.01,
+          "worker_3": 0.005
+        },
+        "final_loss": null,
+        "converged": false
+      },
+      "success_criteria_met": false,
+      "failure_reasons": [
+        "High rejection rate: 74.4% > 10.0%"
+      ],
+      "start_time": 1763513563.3551166,
+      "end_time": 1763513563.3571775,
+      "duration_s": 0.0020608901977539062,
+      "config_snapshot": {
+        "use_async": true,
+        "compression_method": "topk",
+        "compression_ratio": 0.05,
+        "max_staleness": 5,
+        "aggregation_rule": "trimmed_mean",
+        "trim_ratio": 0.1
+      }
+    },
+    {
+      "scenario_name": "moderate_dnn",
+      "challenge_name": "heterogeneous",
+      "status": "completed",
+      "metrics": {
+        "total_steps": 210,
+        "total_time_s": 0.00168609619140625,
+        "steps_per_second": 124548.05429864253,
+        "total_bytes_sent": 14829360,
+        "total_bytes_received": 0,
+        "average_bandwidth_mbps": 0.0,
+        "average_latency_ms": 0.0,
+        "total_gradients_submitted": 582,
+        "total_gradients_accepted": 210,
+        "total_gradients_rejected": 372,
+        "rejection_rate": 0.6391752577319587,
+        "average_staleness": 6.391752577319587,
+        "total_compression_ratio": 100.0,
+        "bandwidth_saved_percent": 99.0,
+        "total_failures": 0,
+        "failures_by_type": {},
+        "active_workers": 5,
+        "total_worker_steps": {
+          "fast_gpu": 200,
+          "standard_gpu": 200,
+          "slow_gpu": 118,
+          "cpu_worker": 45,
+          "edge_worker": 19
+        },
+        "worker_acceptance_rates": {
+          "fast_gpu": 1.0,
+          "standard_gpu": 0.025,
+          "slow_gpu": 0.025423728813559324,
+          "cpu_worker": 0.022222222222222223,
+          "edge_worker": 0.05263157894736842
+        },
+        "final_loss": null,
+        "converged": false
+      },
+      "success_criteria_met": false,
+      "failure_reasons": [
+        "High rejection rate: 63.9% > 15.0%"
+      ],
+      "start_time": 1763513563.3571818,
+      "end_time": 1763513563.3589072,
+      "duration_s": 0.0017254352569580078,
+      "config_snapshot": {
+        "use_async": true,
+        "compression_method": "topk",
+        "compression_ratio": 0.01,
+        "max_staleness": 10,
+        "aggregation_rule": "trimmed_mean",
+        "trim_ratio": 0.1
+      }
+    },
+    {
+      "scenario_name": "moderate_dnn",
+      "challenge_name": "unreliable",
+      "status": "completed",
+      "metrics": {
+        "total_steps": 123,
+        "total_time_s": 0.0014147758483886719,
+        "steps_per_second": 86939.567239636,
+        "total_bytes_sent": 10064600,
+        "total_bytes_received": 0,
+        "average_bandwidth_mbps": 0.0,
+        "average_latency_ms": 0.0,
+        "total_gradients_submitted": 395,
+        "total_gradients_accepted": 123,
+        "total_gradients_rejected": 272,
+        "rejection_rate": 0.6886075949367089,
+        "average_staleness": 5.508860759493671,
+        "total_compression_ratio": 100.0,
+        "bandwidth_saved_percent": 99.0,
+        "total_failures": 0,
+        "failures_by_type": {},
+        "active_workers": 4,
+        "total_worker_steps": {
+          "worker_0": 115,
+          "worker_1": 107,
+          "worker_2": 86,
+          "worker_3": 87
+        },
+        "worker_acceptance_rates": {
+          "worker_0": 1.0,
+          "worker_1": 0.028037383177570093,
+          "worker_2": 0.03488372093023256,
+          "worker_3": 0.022988505747126436
+        },
+        "final_loss": null,
+        "converged": false
+      },
+      "success_criteria_met": false,
+      "failure_reasons": [
+        "Insufficient steps: 123 < 250",
+        "High rejection rate: 68.9% > 20.0%"
+      ],
+      "start_time": 1763513563.3589115,
+      "end_time": 1763513563.360367,
+      "duration_s": 0.001455545425415039,
+      "config_snapshot": {
+        "use_async": true,
+        "compression_method": "topk",
+        "compression_ratio": 0.01,
+        "max_staleness": 8,
+        "aggregation_rule": "trimmed_mean",
+        "trim_ratio": 0.1
+      }
+    },
+    {
+      "scenario_name": "moderate_dnn",
+      "challenge_name": "churn",
+      "status": "completed",
+      "metrics": {
+        "total_steps": 152,
+        "total_time_s": 0.0014810562133789062,
+        "steps_per_second": 102629.4603992273,
+        "total_bytes_sent": 10956400,
+        "total_bytes_received": 0,
+        "average_bandwidth_mbps": 0.0,
+        "average_latency_ms": 0.0,
+        "total_gradients_submitted": 430,
+        "total_gradients_accepted": 152,
+        "total_gradients_rejected": 278,
+        "rejection_rate": 0.6465116279069767,
+        "average_staleness": 6.4651162790697665,
+        "total_compression_ratio": 100.0,
+        "bandwidth_saved_percent": 99.0,
+        "total_failures": 0,
+        "failures_by_type": {},
+        "active_workers": 6,
+        "total_worker_steps": {
+          "worker_0": 111,
+          "worker_1": 142,
+          "worker_2": 68,
+          "worker_3": 42,
+          "worker_4": 38,
+          "worker_5": 29
+        },
+        "worker_acceptance_rates": {
+          "worker_0": 0.21621621621621623,
+          "worker_1": 0.8661971830985915,
+          "worker_2": 0.07352941176470588,
+          "worker_3": 0.0,
+          "worker_4": 0.0,
+          "worker_5": 0.0
+        },
+        "final_loss": null,
+        "converged": false
+      },
+      "success_criteria_met": false,
+      "failure_reasons": [
+        "Insufficient steps: 152 < 300",
+        "High rejection rate: 64.7% > 25.0%"
+      ],
+      "start_time": 1763513563.3603706,
+      "end_time": 1763513563.3619702,
+      "duration_s": 0.0015995502471923828,
+      "config_snapshot": {
+        "use_async": true,
+        "compression_method": "topk",
+        "compression_ratio": 0.01,
+        "max_staleness": 10,
+        "aggregation_rule": "trimmed_mean",
+        "trim_ratio": 0.1
+      }
+    },
+    {
+      "scenario_name": "moderate_dnn",
+      "challenge_name": "byzantine",
+      "status": "completed",
+      "metrics": {
+        "total_steps": 205,
+        "total_time_s": 0.0024247169494628906,
+        "steps_per_second": 84545.95083579155,
+        "total_bytes_sent": 121922757,
+        "total_bytes_received": 0,
+        "average_bandwidth_mbps": 0.0,
+        "average_latency_ms": 0.0,
+        "total_gradients_submitted": 957,
+        "total_gradients_accepted": 205,
+        "total_gradients_rejected": 752,
+        "rejection_rate": 0.7857889237199582,
+        "average_staleness": 3.9289446185997914,
+        "total_compression_ratio": 20.0,
+        "bandwidth_saved_percent": 95.0,
+        "total_failures": 0,
+        "failures_by_type": {},
+        "active_workers": 5,
+        "total_worker_steps": {
+          "honest_1": 200,
+          "honest_2": 200,
+          "honest_3": 157,
+          "byzantine_1": 200,
+          "byzantine_2": 200
+        },
+        "worker_acceptance_rates": {
+          "honest_1": 1.0,
+          "honest_2": 0.01,
+          "honest_3": 0.006369426751592357,
+          "byzantine_1": 0.005,
+          "byzantine_2": 0.005
+        },
+        "final_loss": null,
+        "converged": false
+      },
+      "success_criteria_met": false,
+      "failure_reasons": [
+        "Insufficient steps: 205 < 350",
+        "High rejection rate: 78.6% > 30.0%"
+      ],
+      "start_time": 1763513563.3619738,
+      "end_time": 1763513563.3644316,
+      "duration_s": 0.002457857131958008,
+      "config_snapshot": {
+        "use_async": true,
+        "compression_method": "topk",
+        "compression_ratio": 0.05,
+        "max_staleness": 5,
+        "aggregation_rule": "trimmed_mean",
+        "trim_ratio": 0.1
+      }
+    },
+    {
+      "scenario_name": "large_dnn",
+      "challenge_name": "baseline",
+      "status": "completed",
+      "metrics": {
+        "total_steps": 200,
+        "total_time_s": 0.0019989013671875,
+        "steps_per_second": 100054.96183206108,
+        "total_bytes_sent": 37413191200,
+        "total_bytes_received": 0,
+        "average_bandwidth_mbps": 0.0,
+        "average_latency_ms": 0.0,
+        "total_gradients_submitted": 800,
+        "total_gradients_accepted": 800,
+        "total_gradients_rejected": 0,
+        "rejection_rate": 0.0,
+        "average_staleness": 0.0,
+        "total_compression_ratio": 1.0,
+        "bandwidth_saved_percent": 0.0,
+        "total_failures": 0,
+        "failures_by_type": {},
+        "active_workers": 4,
+        "total_worker_steps": {
+          "worker_0": 200,
+          "worker_1": 200,
+          "worker_2": 200,
+          "worker_3": 200
+        },
+        "worker_acceptance_rates": {
+          "worker_0": 1.0,
+          "worker_1": 1.0,
+          "worker_2": 1.0,
+          "worker_3": 1.0
+        },
+        "final_loss": null,
+        "converged": false
+      },
+      "success_criteria_met": true,
+      "failure_reasons": [],
+      "start_time": 1763513563.3644361,
+      "end_time": 1763513563.3664615,
+      "duration_s": 0.0020253658294677734,
+      "config_snapshot": {
+        "use_async": false,
+        "compression_method": "none",
+        "compression_ratio": 1.0,
+        "max_staleness": 0,
+        "aggregation_rule": "trimmed_mean",
+        "trim_ratio": 0.1
+      }
+    },
+    {
+      "scenario_name": "large_dnn",
+      "challenge_name": "wan_bandwidth",
+      "status": "completed",
+      "metrics": {
+        "total_steps": 203,
+        "total_time_s": 0.0016317367553710938,
+        "steps_per_second": 124407.32203389831,
+        "total_bytes_sent": 374131200,
+        "total_bytes_received": 0,
+        "average_bandwidth_mbps": 0.0,
+        "average_latency_ms": 0.0,
+        "total_gradients_submitted": 800,
+        "total_gradients_accepted": 203,
+        "total_gradients_rejected": 597,
+        "rejection_rate": 0.74625,
+        "average_staleness": 2.23875,
+        "total_compression_ratio": 100.0,
+        "bandwidth_saved_percent": 99.0,
+        "total_failures": 0,
+        "failures_by_type": {},
+        "active_workers": 4,
+        "total_worker_steps": {
+          "worker_0": 200,
+          "worker_1": 200,
+          "worker_2": 200,
+          "worker_3": 200
+        },
+        "worker_acceptance_rates": {
+          "worker_0": 1.0,
+          "worker_1": 0.005,
+          "worker_2": 0.005,
+          "worker_3": 0.005
+        },
+        "final_loss": null,
+        "converged": false
+      },
+      "success_criteria_met": false,
+      "failure_reasons": [
+        "High rejection rate: 74.6% > 5.0%"
+      ],
+      "start_time": 1763513563.3664649,
+      "end_time": 1763513563.3681233,
+      "duration_s": 0.0016584396362304688,
+      "config_snapshot": {
+        "use_async": true,
+        "compression_method": "topk",
+        "compression_ratio": 0.01,
+        "max_staleness": 3,
+        "aggregation_rule": "trimmed_mean",
+        "trim_ratio": 0.1
+      }
+    },
+    {
+      "scenario_name": "large_dnn",
+      "challenge_name": "wan_latency",
+      "status": "completed",
+      "metrics": {
+        "total_steps": 205,
+        "total_time_s": 0.001837015151977539,
+        "steps_per_second": 111594.07138221934,
+        "total_bytes_sent": 1870659200,
+        "total_bytes_received": 0,
+        "average_bandwidth_mbps": 0.0,
+        "average_latency_ms": 0.0,
+        "total_gradients_submitted": 800,
+        "total_gradients_accepted": 205,
+        "total_gradients_rejected": 595,
+        "rejection_rate": 0.74375,
+        "average_staleness": 3.71875,
+        "total_compression_ratio": 20.0,
+        "bandwidth_saved_percent": 95.0,
+        "total_failures": 0,
+        "failures_by_type": {},
+        "active_workers": 4,
+        "total_worker_steps": {
+          "worker_0": 200,
+          "worker_1": 200,
+          "worker_2": 200,
+          "worker_3": 200
+        },
+        "worker_acceptance_rates": {
+          "worker_0": 1.0,
+          "worker_1": 0.01,
+          "worker_2": 0.01,
+          "worker_3": 0.005
+        },
+        "final_loss": null,
+        "converged": false
+      },
+      "success_criteria_met": false,
+      "failure_reasons": [
+        "High rejection rate: 74.4% > 10.0%"
+      ],
+      "start_time": 1763513563.3681262,
+      "end_time": 1763513563.36999,
+      "duration_s": 0.0018639564514160156,
+      "config_snapshot": {
+        "use_async": true,
+        "compression_method": "topk",
+        "compression_ratio": 0.05,
+        "max_staleness": 5,
+        "aggregation_rule": "trimmed_mean",
+        "trim_ratio": 0.1
+      }
+    },
+    {
+      "scenario_name": "large_dnn",
+      "challenge_name": "heterogeneous",
+      "status": "completed",
+      "metrics": {
+        "total_steps": 210,
+        "total_time_s": 0.0014362335205078125,
+        "steps_per_second": 146215.77689243027,
+        "total_bytes_sent": 259085856,
+        "total_bytes_received": 0,
+        "average_bandwidth_mbps": 0.0,
+        "average_latency_ms": 0.0,
+        "total_gradients_submitted": 554,
+        "total_gradients_accepted": 210,
+        "total_gradients_rejected": 344,
+        "rejection_rate": 0.6209386281588448,
+        "average_staleness": 6.209386281588448,
+        "total_compression_ratio": 100.0,
+        "bandwidth_saved_percent": 99.0,
+        "total_failures": 0,
+        "failures_by_type": {},
+        "active_workers": 5,
+        "total_worker_steps": {
+          "fast_gpu": 200,
+          "standard_gpu": 200,
+          "slow_gpu": 90,
+          "cpu_worker": 44,
+          "edge_worker": 20
+        },
+        "worker_acceptance_rates": {
+          "fast_gpu": 1.0,
+          "standard_gpu": 0.04,
+          "slow_gpu": 0.011111111111111112,
+          "cpu_worker": 0.022727272727272728,
+          "edge_worker": 0.0
+        },
+        "final_loss": null,
+        "converged": false
+      },
+      "success_criteria_met": false,
+      "failure_reasons": [
+        "High rejection rate: 62.1% > 15.0%"
+      ],
+      "start_time": 1763513563.3699934,
+      "end_time": 1763513563.3714607,
+      "duration_s": 0.0014672279357910156,
+      "config_snapshot": {
+        "use_async": true,
+        "compression_method": "topk",
+        "compression_ratio": 0.01,
+        "max_staleness": 10,
+        "aggregation_rule": "trimmed_mean",
+        "trim_ratio": 0.1
+      }
+    },
+    {
+      "scenario_name": "large_dnn",
+      "challenge_name": "unreliable",
+      "status": "completed",
+      "metrics": {
+        "total_steps": 115,
+        "total_time_s": 0.0012340545654296875,
+        "steps_per_second": 93188.74806800619,
+        "total_bytes_sent": 176776992,
+        "total_bytes_received": 0,
+        "average_bandwidth_mbps": 0.0,
+        "average_latency_ms": 0.0,
+        "total_gradients_submitted": 378,
+        "total_gradients_accepted": 115,
+        "total_gradients_rejected": 263,
+        "rejection_rate": 0.6957671957671958,
+        "average_staleness": 5.5661375661375665,
+        "total_compression_ratio": 100.0,
+        "bandwidth_saved_percent": 99.0,
+        "total_failures": 0,
+        "failures_by_type": {},
+        "active_workers": 4,
+        "total_worker_steps": {
+          "worker_0": 107,
+          "worker_1": 102,
+          "worker_2": 93,
+          "worker_3": 76
+        },
+        "worker_acceptance_rates": {
+          "worker_0": 0.7757009345794392,
+          "worker_1": 0.14705882352941177,
+          "worker_2": 0.1827956989247312,
+          "worker_3": 0.0
+        },
+        "final_loss": null,
+        "converged": false
+      },
+      "success_criteria_met": false,
+      "failure_reasons": [
+        "Insufficient steps: 115 < 250",
+        "High rejection rate: 69.6% > 20.0%"
+      ],
+      "start_time": 1763513563.3714635,
+      "end_time": 1763513563.372723,
+      "duration_s": 0.0012595653533935547,
+      "config_snapshot": {
+        "use_async": true,
+        "compression_method": "topk",
+        "compression_ratio": 0.01,
+        "max_staleness": 8,
+        "aggregation_rule": "trimmed_mean",
+        "trim_ratio": 0.1
+      }
+    },
+    {
+      "scenario_name": "large_dnn",
+      "challenge_name": "churn",
+      "status": "completed",
+      "metrics": {
+        "total_steps": 180,
+        "total_time_s": 0.0018231868743896484,
+        "steps_per_second": 98728.22283248333,
+        "total_bytes_sent": 263294832,
+        "total_bytes_received": 0,
+        "average_bandwidth_mbps": 0.0,
+        "average_latency_ms": 0.0,
+        "total_gradients_submitted": 563,
+        "total_gradients_accepted": 180,
+        "total_gradients_rejected": 383,
+        "rejection_rate": 0.6802841918294849,
+        "average_staleness": 6.802841918294849,
+        "total_compression_ratio": 100.0,
+        "bandwidth_saved_percent": 99.0,
+        "total_failures": 0,
+        "failures_by_type": {},
+        "active_workers": 6,
+        "total_worker_steps": {
+          "worker_0": 104,
+          "worker_1": 170,
+          "worker_2": 97,
+          "worker_3": 96,
+          "worker_4": 72,
+          "worker_5": 24
+        },
+        "worker_acceptance_rates": {
+          "worker_0": 0.4423076923076923,
+          "worker_1": 0.7705882352941177,
+          "worker_2": 0.030927835051546393,
+          "worker_3": 0.0,
+          "worker_4": 0.0,
+          "worker_5": 0.0
+        },
+        "final_loss": null,
+        "converged": false
+      },
+      "success_criteria_met": false,
+      "failure_reasons": [
+        "Insufficient steps: 180 < 300",
+        "High rejection rate: 68.0% > 25.0%"
+      ],
+      "start_time": 1763513563.372726,
+      "end_time": 1763513563.3745942,
+      "duration_s": 0.0018682479858398438,
+      "config_snapshot": {
+        "use_async": true,
+        "compression_method": "topk",
+        "compression_ratio": 0.01,
+        "max_staleness": 10,
+        "aggregation_rule": "trimmed_mean",
+        "trim_ratio": 0.1
+      }
+    },
+    {
+      "scenario_name": "large_dnn",
+      "challenge_name": "byzantine",
+      "status": "completed",
+      "metrics": {
+        "total_steps": 205,
+        "total_time_s": 0.002244710922241211,
+        "steps_per_second": 91325.79075942645,
+        "total_bytes_sent": 2258820984,
+        "total_bytes_received": 0,
+        "average_bandwidth_mbps": 0.0,
+        "average_latency_ms": 0.0,
+        "total_gradients_submitted": 966,
+        "total_gradients_accepted": 205,
+        "total_gradients_rejected": 761,
+        "rejection_rate": 0.7877846790890269,
+        "average_staleness": 3.938923395445135,
+        "total_compression_ratio": 20.0,
+        "bandwidth_saved_percent": 95.0,
+        "total_failures": 0,
+        "failures_by_type": {},
+        "active_workers": 5,
+        "total_worker_steps": {
+          "honest_1": 200,
+          "honest_2": 200,
+          "honest_3": 166,
+          "byzantine_1": 200,
+          "byzantine_2": 200
+        },
+        "worker_acceptance_rates": {
+          "honest_1": 1.0,
+          "honest_2": 0.01,
+          "honest_3": 0.006024096385542169,
+          "byzantine_1": 0.005,
+          "byzantine_2": 0.005
+        },
+        "final_loss": null,
+        "converged": false
+      },
+      "success_criteria_met": false,
+      "failure_reasons": [
+        "Insufficient steps: 205 < 350",
+        "High rejection rate: 78.8% > 30.0%"
+      ],
+      "start_time": 1763513563.3745978,
+      "end_time": 1763513563.376875,
+      "duration_s": 0.0022771358489990234,
+      "config_snapshot": {
+        "use_async": true,
+        "compression_method": "topk",
+        "compression_ratio": 0.05,
+        "max_staleness": 5,
+        "aggregation_rule": "trimmed_mean",
+        "trim_ratio": 0.1
+      }
+    },
+    {
+      "scenario_name": "very_large_dnn",
+      "challenge_name": "baseline",
+      "status": "completed",
+      "metrics": {
+        "total_steps": 200,
+        "total_time_s": 0.0020551681518554688,
+        "steps_per_second": 97315.63805104408,
+        "total_bytes_sent": 327659028000,
+        "total_bytes_received": 0,
+        "average_bandwidth_mbps": 0.0,
+        "average_latency_ms": 0.0,
+        "total_gradients_submitted": 800,
+        "total_gradients_accepted": 800,
+        "total_gradients_rejected": 0,
+        "rejection_rate": 0.0,
+        "average_staleness": 0.0,
+        "total_compression_ratio": 1.0,
+        "bandwidth_saved_percent": 0.0,
+        "total_failures": 0,
+        "failures_by_type": {},
+        "active_workers": 4,
+        "total_worker_steps": {
+          "worker_0": 200,
+          "worker_1": 200,
+          "worker_2": 200,
+          "worker_3": 200
+        },
+        "worker_acceptance_rates": {
+          "worker_0": 1.0,
+          "worker_1": 1.0,
+          "worker_2": 1.0,
+          "worker_3": 1.0
+        },
+        "final_loss": null,
+        "converged": false
+      },
+      "success_criteria_met": true,
+      "failure_reasons": [],
+      "start_time": 1763513563.3768797,
+      "end_time": 1763513563.3789618,
+      "duration_s": 0.0020821094512939453,
+      "config_snapshot": {
+        "use_async": false,
+        "compression_method": "none",
+        "compression_ratio": 1.0,
+        "max_staleness": 0,
+        "aggregation_rule": "trimmed_mean",
+        "trim_ratio": 0.1
+      }
+    },
+    {
+      "scenario_name": "very_large_dnn",
+      "challenge_name": "wan_bandwidth",
+      "status": "completed",
+      "metrics": {
+        "total_steps": 203,
+        "total_time_s": 0.0019991397857666016,
+        "steps_per_second": 101543.67465712583,
+        "total_bytes_sent": 3276589600,
+        "total_bytes_received": 0,
+        "average_bandwidth_mbps": 0.0,
+        "average_latency_ms": 0.0,
+        "total_gradients_submitted": 800,
+        "total_gradients_accepted": 203,
+        "total_gradients_rejected": 597,
+        "rejection_rate": 0.74625,
+        "average_staleness": 2.23875,
+        "total_compression_ratio": 100.0,
+        "bandwidth_saved_percent": 99.0,
+        "total_failures": 0,
+        "failures_by_type": {},
+        "active_workers": 4,
+        "total_worker_steps": {
+          "worker_0": 200,
+          "worker_1": 200,
+          "worker_2": 200,
+          "worker_3": 200
+        },
+        "worker_acceptance_rates": {
+          "worker_0": 1.0,
+          "worker_1": 0.005,
+          "worker_2": 0.005,
+          "worker_3": 0.005
+        },
+        "final_loss": null,
+        "converged": false
+      },
+      "success_criteria_met": false,
+      "failure_reasons": [
+        "High rejection rate: 74.6% > 5.0%"
+      ],
+      "start_time": 1763513563.3789666,
+      "end_time": 1763513563.381,
+      "duration_s": 0.0020334720611572266,
+      "config_snapshot": {
+        "use_async": true,
+        "compression_method": "topk",
+        "compression_ratio": 0.01,
+        "max_staleness": 3,
+        "aggregation_rule": "trimmed_mean",
+        "trim_ratio": 0.1
+      }
+    },
+    {
+      "scenario_name": "very_large_dnn",
+      "challenge_name": "wan_latency",
+      "status": "completed",
+      "metrics": {
+        "total_steps": 205,
+        "total_time_s": 0.0016460418701171875,
+        "steps_per_second": 124541.1819235226,
+        "total_bytes_sent": 16382951200,
+        "total_bytes_received": 0,
+        "average_bandwidth_mbps": 0.0,
+        "average_latency_ms": 0.0,
+        "total_gradients_submitted": 800,
+        "total_gradients_accepted": 205,
+        "total_gradients_rejected": 595,
+        "rejection_rate": 0.74375,
+        "average_staleness": 3.71875,
+        "total_compression_ratio": 20.0,
+        "bandwidth_saved_percent": 95.0,
+        "total_failures": 0,
+        "failures_by_type": {},
+        "active_workers": 4,
+        "total_worker_steps": {
+          "worker_0": 200,
+          "worker_1": 200,
+          "worker_2": 200,
+          "worker_3": 200
+        },
+        "worker_acceptance_rates": {
+          "worker_0": 1.0,
+          "worker_1": 0.01,
+          "worker_2": 0.01,
+          "worker_3": 0.005
+        },
+        "final_loss": null,
+        "converged": false
+      },
+      "success_criteria_met": false,
+      "failure_reasons": [
+        "High rejection rate: 74.4% > 10.0%"
+      ],
+      "start_time": 1763513563.3810046,
+      "end_time": 1763513563.3826847,
+      "duration_s": 0.001680135726928711,
+      "config_snapshot": {
+        "use_async": true,
+        "compression_method": "topk",
+        "compression_ratio": 0.05,
+        "max_staleness": 5,
+        "aggregation_rule": "trimmed_mean",
+        "trim_ratio": 0.1
+      }
+    },
+    {
+      "scenario_name": "very_large_dnn",
+      "challenge_name": "heterogeneous",
+      "status": "completed",
+      "metrics": {
+        "total_steps": 210,
+        "total_time_s": 0.001775503158569336,
+        "steps_per_second": 118276.33140862093,
+        "total_bytes_sent": 2326378616,
+        "total_bytes_received": 0,
+        "average_bandwidth_mbps": 0.0,
+        "average_latency_ms": 0.0,
+        "total_gradients_submitted": 568,
+        "total_gradients_accepted": 210,
+        "total_gradients_rejected": 358,
+        "rejection_rate": 0.6302816901408451,
+        "average_staleness": 6.302816901408451,
+        "total_compression_ratio": 100.0,
+        "bandwidth_saved_percent": 99.0,
+        "total_failures": 0,
+        "failures_by_type": {},
+        "active_workers": 5,
+        "total_worker_steps": {
+          "fast_gpu": 200,
+          "standard_gpu": 200,
+          "slow_gpu": 107,
+          "cpu_worker": 41,
+          "edge_worker": 20
+        },
+        "worker_acceptance_rates": {
+          "fast_gpu": 1.0,
+          "standard_gpu": 0.035,
+          "slow_gpu": 0.028037383177570093,
+          "cpu_worker": 0.0,
+          "edge_worker": 0.0
+        },
+        "final_loss": null,
+        "converged": false
+      },
+      "success_criteria_met": false,
+      "failure_reasons": [
+        "High rejection rate: 63.0% > 15.0%"
+      ],
+      "start_time": 1763513563.382688,
+      "end_time": 1763513563.3845046,
+      "duration_s": 0.0018165111541748047,
+      "config_snapshot": {
+        "use_async": true,
+        "compression_method": "topk",
+        "compression_ratio": 0.01,
+        "max_staleness": 10,
+        "aggregation_rule": "trimmed_mean",
+        "trim_ratio": 0.1
+      }
+    },
+    {
+      "scenario_name": "very_large_dnn",
+      "challenge_name": "unreliable",
+      "status": "completed",
+      "metrics": {
+        "total_steps": 124,
+        "total_time_s": 0.0013189315795898438,
+        "steps_per_second": 94015.49096167751,
+        "total_bytes_sent": 1720209540,
+        "total_bytes_received": 0,
+        "average_bandwidth_mbps": 0.0,
+        "average_latency_ms": 0.0,
+        "total_gradients_submitted": 420,
+        "total_gradients_accepted": 124,
+        "total_gradients_rejected": 296,
+        "rejection_rate": 0.7047619047619048,
+        "average_staleness": 5.6380952380952385,
+        "total_compression_ratio": 100.0,
+        "bandwidth_saved_percent": 99.0,
+        "total_failures": 0,
+        "failures_by_type": {},
+        "active_workers": 4,
+        "total_worker_steps": {
+          "worker_0": 116,
+          "worker_1": 106,
+          "worker_2": 114,
+          "worker_3": 84
+        },
+        "worker_acceptance_rates": {
+          "worker_0": 0.08620689655172414,
+          "worker_1": 0.6320754716981132,
+          "worker_2": 0.32456140350877194,
+          "worker_3": 0.11904761904761904
+        },
+        "final_loss": null,
+        "converged": false
+      },
+      "success_criteria_met": false,
+      "failure_reasons": [
+        "Insufficient steps: 124 < 250",
+        "High rejection rate: 70.5% > 20.0%"
+      ],
+      "start_time": 1763513563.3845122,
+      "end_time": 1763513563.3858733,
+      "duration_s": 0.0013611316680908203,
+      "config_snapshot": {
+        "use_async": true,
+        "compression_method": "topk",
+        "compression_ratio": 0.01,
+        "max_staleness": 8,
+        "aggregation_rule": "trimmed_mean",
+        "trim_ratio": 0.1
+      }
+    },
+    {
+      "scenario_name": "very_large_dnn",
+      "challenge_name": "churn",
+      "status": "completed",
+      "metrics": {
+        "total_steps": 140,
+        "total_time_s": 0.0015635490417480469,
+        "steps_per_second": 89539.88411100945,
+        "total_bytes_sent": 1929092127,
+        "total_bytes_received": 0,
+        "average_bandwidth_mbps": 0.0,
+        "average_latency_ms": 0.0,
+        "total_gradients_submitted": 471,
+        "total_gradients_accepted": 140,
+        "total_gradients_rejected": 331,
+        "rejection_rate": 0.70276008492569,
+        "average_staleness": 7.0276008492569,
+        "total_compression_ratio": 100.0,
+        "bandwidth_saved_percent": 99.0,
+        "total_failures": 0,
+        "failures_by_type": {},
+        "active_workers": 6,
+        "total_worker_steps": {
+          "worker_0": 96,
+          "worker_1": 107,
+          "worker_2": 130,
+          "worker_3": 12,
+          "worker_4": 67,
+          "worker_5": 59
+        },
+        "worker_acceptance_rates": {
+          "worker_0": 0.84375,
+          "worker_1": 0.04672897196261682,
+          "worker_2": 0.4153846153846154,
+          "worker_3": 0.0,
+          "worker_4": 0.0,
+          "worker_5": 0.0
+        },
+        "final_loss": null,
+        "converged": false
+      },
+      "success_criteria_met": false,
+      "failure_reasons": [
+        "Insufficient steps: 140 < 300",
+        "High rejection rate: 70.3% > 25.0%"
+      ],
+      "start_time": 1763513563.3858771,
+      "end_time": 1763513563.387489,
+      "duration_s": 0.001611948013305664,
+      "config_snapshot": {
+        "use_async": true,
+        "compression_method": "topk",
+        "compression_ratio": 0.01,
+        "max_staleness": 10,
+        "aggregation_rule": "trimmed_mean",
+        "trim_ratio": 0.1
+      }
+    },
+    {
+      "scenario_name": "very_large_dnn",
+      "challenge_name": "byzantine",
+      "status": "completed",
+      "metrics": {
+        "total_steps": 205,
+        "total_time_s": 0.0021097660064697266,
+        "steps_per_second": 97167.17369194259,
+        "total_bytes_sent": 19741456196,
+        "total_bytes_received": 0,
+        "average_bandwidth_mbps": 0.0,
+        "average_latency_ms": 0.0,
+        "total_gradients_submitted": 964,
+        "total_gradients_accepted": 205,
+        "total_gradients_rejected": 759,
+        "rejection_rate": 0.7873443983402489,
+        "average_staleness": 3.9367219917012446,
+        "total_compression_ratio": 20.0,
+        "bandwidth_saved_percent": 95.0,
+        "total_failures": 0,
+        "failures_by_type": {},
+        "active_workers": 5,
+        "total_worker_steps": {
+          "honest_1": 200,
+          "honest_2": 200,
+          "honest_3": 164,
+          "byzantine_1": 200,
+          "byzantine_2": 200
+        },
+        "worker_acceptance_rates": {
+          "honest_1": 1.0,
+          "honest_2": 0.01,
+          "honest_3": 0.006097560975609756,
+          "byzantine_1": 0.005,
+          "byzantine_2": 0.005
+        },
+        "final_loss": null,
+        "converged": false
+      },
+      "success_criteria_met": false,
+      "failure_reasons": [
+        "Insufficient steps: 205 < 350",
+        "High rejection rate: 78.7% > 30.0%"
+      ],
+      "start_time": 1763513563.3874927,
+      "end_time": 1763513563.3896353,
+      "duration_s": 0.002142667770385742,
+      "config_snapshot": {
+        "use_async": true,
+        "compression_method": "topk",
+        "compression_ratio": 0.05,
+        "max_staleness": 5,
+        "aggregation_rule": "trimmed_mean",
+        "trim_ratio": 0.1
+      }
+    }
+  ]
+}

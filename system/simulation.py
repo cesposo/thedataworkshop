@@ -10,7 +10,13 @@ from dist_llm_train.config import load_config
 from dist_llm_train.logging_utils import configure_logging
 
 
-def run_simulation(config_path: Optional[str] = None, state_db_path: Optional[str] = None, ps_checkpoint_path: Optional[str] = None):
+def run_simulation(
+    config_path: Optional[str] = None,
+    state_db_path: Optional[str] = None,
+    ps_checkpoint_path: Optional[str] = None,
+    netem_profile: Optional[str] = None,
+    netem_seed: Optional[int] = None,
+):
     """
     Runs a basic scheduling/heartbeat simulation.
 
@@ -24,7 +30,11 @@ def run_simulation(config_path: Optional[str] = None, state_db_path: Optional[st
         host = ctrl_cfg.get('host', 'localhost')
         port = int(ctrl_cfg.get('port', 8000))
         scheduler = ctrl_cfg.get('scheduler', 'gale-shapley')
-        controller = MainController(host=host, port=port, scheduler_name=scheduler, state_db_path=state_db_path)
+        net_cfg = cfg.get('network', {})
+        profile = netem_profile if netem_profile is not None else net_cfg.get('profile')
+        seed = netem_seed if netem_seed is not None else net_cfg.get('seed')
+
+        controller = MainController(host=host, port=port, scheduler_name=scheduler, state_db_path=state_db_path, netem_profile=profile, netem_seed=seed)
 
         # Optionally load PS
         if ps_checkpoint_path and os.path.exists(ps_checkpoint_path):
@@ -44,6 +54,8 @@ def run_simulation(config_path: Optional[str] = None, state_db_path: Optional[st
                 host=wc.get('host', host),
                 port=int(wc.get('port', 0)),
                 controller_address=f"http://{host}:{controller.communicator.port}",
+                netem_profile=profile,
+                netem_seed=seed,
             )
             workers.append(w)
             controller.register_worker(
@@ -103,12 +115,12 @@ def run_simulation(config_path: Optional[str] = None, state_db_path: Optional[st
         return status
 
     # Fallback to legacy behavior when no config provided
-    controller = MainController(host='localhost', port=8000)
+    controller = MainController(host='localhost', port=8000, netem_profile=netem_profile, netem_seed=netem_seed)
 
     worker1 = WorkerNode(name='worker-1', memory=16, flops_per_second=100, network_bandwidth=1000,
-                         host='localhost', port=8001, controller_address='http://localhost:8000')
+                         host='localhost', port=8001, controller_address='http://localhost:8000', netem_profile=netem_profile, netem_seed=netem_seed)
     worker2 = WorkerNode(name='worker-2', memory=32, flops_per_second=200, network_bandwidth=1000,
-                         host='localhost', port=8002, controller_address='http://localhost:8000')
+                         host='localhost', port=8002, controller_address='http://localhost:8000', netem_profile=netem_profile, netem_seed=netem_seed)
 
     controller.register_worker(worker1.id, f'http://{worker1.communicator.host}:{worker1.communicator.port}', worker1)
     controller.register_worker(worker2.id, f'http://{worker2.communicator.host}:{worker2.communicator.port}', worker2)

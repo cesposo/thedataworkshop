@@ -1,0 +1,5 @@
+config,mode,profile,netem_profile,netem_seed,window,repeat,duration_s,num_workers,num_completed_tasks,num_pending_tasks,mean_ewma_tokens_per_sec,mean_ewma_step_time_s
+configs/capability_demo.yaml,basic,brownout,brownout,1,0,1,4.178,3,0,1,,
+configs/gale_shapley_demo.yaml,basic,brownout,brownout,1,0,1,2.770,3,0,1,,
+configs/priority_demo.yaml,basic,brownout,brownout,1,0,1,2.694,2,0,2,,
+configs/submit_job_demo.yaml,basic,brownout,brownout,1,0,1,5.130,2,0,2,,

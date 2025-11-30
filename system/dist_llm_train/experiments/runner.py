@@ -7,7 +7,7 @@ from typing import List, Optional
 from dist_llm_train.logging_utils import configure_logging
 
 
-def run_experiments(configs: List[str], mode: str = 'ml', repeats: int = 1, output_csv: str = 'experiments.csv', profile: str = '', window: int = 0) -> str:
+def run_experiments(configs: List[str], mode: str = 'ml', repeats: int = 1, output_csv: str = 'experiments.csv', profile: str = '', window: int = 0, netem_profile: Optional[str] = None, netem_seed: Optional[int] = None) -> str:
     """Run a set of simulations and record summary metrics to CSV.
 
     Returns the path to the CSV file.
@@ -25,11 +25,11 @@ def run_experiments(configs: List[str], mode: str = 'ml', repeats: int = 1, outp
             if mode == 'ml':
                 from ml_training_simulation import run_ml_training_simulation
 
-                status = run_ml_training_simulation(cfg)
+                status = run_ml_training_simulation(cfg, netem_profile=netem_profile, netem_seed=netem_seed)
             elif mode == 'basic':
                 from simulation import run_simulation
 
-                status = run_simulation(cfg)
+                status = run_simulation(cfg, netem_profile=netem_profile, netem_seed=netem_seed)
             else:
                 raise ValueError(f"Unknown mode: {mode}")
             duration = time.perf_counter() - start
@@ -52,6 +52,8 @@ def run_experiments(configs: List[str], mode: str = 'ml', repeats: int = 1, outp
                 'config': cfg,
                 'mode': mode,
                 'profile': profile,
+                'netem_profile': netem_profile or '',
+                'netem_seed': netem_seed if netem_seed is not None else '',
                 'window': window,
                 'repeat': r + 1,
                 'duration_s': f"{duration:.3f}",
@@ -63,7 +65,7 @@ def run_experiments(configs: List[str], mode: str = 'ml', repeats: int = 1, outp
             })
 
     # Write CSV
-    fieldnames = ['config', 'mode', 'profile', 'window', 'repeat', 'duration_s', 'num_workers', 'num_completed_tasks', 'num_pending_tasks', 'mean_ewma_tokens_per_sec', 'mean_ewma_step_time_s']
+    fieldnames = ['config', 'mode', 'profile', 'netem_profile', 'netem_seed', 'window', 'repeat', 'duration_s', 'num_workers', 'num_completed_tasks', 'num_pending_tasks', 'mean_ewma_tokens_per_sec', 'mean_ewma_step_time_s']
     with open(output_csv, 'w', newline='', encoding='utf-8') as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
