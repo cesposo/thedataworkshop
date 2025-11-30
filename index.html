@@ -17,7 +17,7 @@
     nav a { margin-right: 1rem; color: #fff; text-decoration: none; font-weight: 600; }
     .hero { display:flex; flex-direction:column; gap:.6rem; padding:1.25rem; background:linear-gradient(135deg, #0a84ff, #0ab3ff); color:#fff; border-radius:14px; box-shadow: 0 12px 28px rgba(10,132,255,0.28); margin-top:1rem; }
     .hero h1 { margin:0; font-size: clamp(1.8rem, 2vw + 1rem, 2.6rem); }
-    .hero p { margin:0; max-width: 720px; }
+    .hero p { margin:0; max-width: 760px; }
     main h2 { margin-top: 1.6rem; }
     .card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 1rem; margin: 1rem 0; background:#fff; box-shadow: 0 8px 24px rgba(0,0,0,0.05); }
     button.install { padding: .6rem 1rem; border-radius: 8px; border: 1px solid #0a84ff; background: #0a84ff; color: #fff; font-weight: 600; }
@@ -33,6 +33,8 @@
     .scroll-x { overflow-x: auto; }
     code { background:#f3f4f6; padding:0.05rem 0.35rem; border-radius:6px; }
     ul { padding-left: 1.1rem; }
+    .chart { width:100%; max-width:520px; height:260px; background:#fff; border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,0.04); }
+    .map { width:100%; max-width:520px; background:#fff; border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,0.04); }
   </style>
 </head>
 <body>
@@ -42,7 +44,7 @@
         <div>
           <div class="pill">Distributed LLM training research</div>
           <h1>DataWorkshop Research Hub</h1>
-          <p>MLSys-ready simulator for WAN impairments, heterogeneous nodes, and robust aggregation. Backed by 100+ passing tests and reproducible CSV runs.</p>
+          <p>A simulation and experimentation space for training LLMs across unreliable, heterogeneous networks. Emphasizes clean architecture, reproducibility, and evidence from real runs.</p>
         </div>
         <div style="display:flex; gap:0.65rem; flex-wrap:wrap;">
           <a class="button" href="https://github.com/cesposo/thedataworkshop">View repo</a>
@@ -62,12 +64,12 @@
   <main class="wrap">
     <section id="about" class="card" aria-labelledby="about-h">
       <h2 id="about-h">Overview</h2>
-      <p>This project studies distributed LLM training in open, unreliable environments. The simulator exercises controller/worker scheduling, adaptive staleness (async PS), gradient compression, and Byzantine-robust aggregation over WAN profiles.</p>
+      <p>This project explores how to coordinate LLM training when the network is the bottleneck: limited bandwidth, variable latency, occasional loss, and heterogeneous worker throughput.</p>
       <ul>
-        <li>Pluggable schedulers (priority, Gale-Shapley, capability) with telemetry.</li>
-        <li>Async PS with adaptive staleness, top-k/quantize/fp16 compression, and robust aggregation (trimmed mean, Krum, Bulyan).</li>
-        <li>WAN netem presets: good, cellular, degraded, brownout, straggler, satellite.</li>
-        <li>Persistence: SQLite snapshots + PS checkpoints; CLI to resume and run experiments.</li>
+        <li>Pluggable schedulers (priority, Gale-Shapley, capability) with telemetry feedback.</li>
+        <li>Async parameter server with adaptive staleness, gradient compression (top-k, quantize, fp16), and Byzantine-robust aggregation (trimmed mean, Krum, Bulyan).</li>
+        <li>WAN impairment presets (good, cellular, degraded, brownout, straggler, satellite) configurable via netem.</li>
+        <li>Reproducibility: SQLite state snapshots, PS checkpoints, CSV experiment logs, and a CLI to resume or batch-run configs.</li>
       </ul>
     </section>
 
@@ -99,6 +101,54 @@
       </div>
     </section>
 
+    <section id="architecture" class="card" aria-labelledby="arch-h">
+      <h2 id="arch-h">Architecture</h2>
+      <p>The system follows a controller/worker model with a parameter server. Scheduling is pluggable; telemetry feeds capability estimates; communication supports XML-RPC and ZMQ for binary payloads.</p>
+      <div class="grid">
+        <div class="card">
+          <div class="pill">Controller</div>
+          <p>Registers workers, runs schedulers, applies WAN profiles, aggregates gradients via the parameter server, and checkpoints state.</p>
+        </div>
+        <div class="card">
+          <div class="pill">Workers</div>
+          <p>Execute tasks, compress gradients, respect staleness bounds, and report telemetry (tokens/s, step time, epoch/batch).</p>
+        </div>
+        <div class="card">
+          <div class="pill">Robust PS</div>
+          <p>Bounded-async coordinator with adaptive staleness; aggregation rules: mean, trimmed mean, Krum, Bulyan; optional gradient clipping/DP.</p>
+        </div>
+      </div>
+      <p class="muted">Documentation: <code>system/docs/architecture.md</code>, <code>system/docs/scheduler_design.md</code>, <code>system/docs/training_protocol.md</code>.</p>
+    </section>
+
+    <section id="wan" class="card" aria-labelledby="wan-h">
+      <h2 id="wan-h">Concept: WAN deployment</h2>
+      <p class="muted">Illustrative topology for a research federation. Nodes experience different RTT/loss and are matched to tasks by capacity and network profile.</p>
+      <div class="grid">
+        <svg class="map" viewBox="0 0 600 320" role="img" aria-label="Stylized US map with research nodes">
+          <rect x="10" y="10" width="580" height="300" rx="16" fill="#f8fbff" stroke="#e5e7eb"/>
+          <circle cx="150" cy="180" r="10" fill="#0a84ff"/><text x="165" y="185" font-size="12">Chicago</text>
+          <circle cx="190" cy="210" r="10" fill="#10b981"/><text x="205" y="215" font-size="12">Madison</text>
+          <circle cx="300" cy="190" r="10" fill="#f59e0b"/><text x="315" y="195" font-size="12">Oak Ridge</text>
+          <circle cx="400" cy="150" r="10" fill="#ef4444"/><text x="415" y="155" font-size="12">Sandia</text>
+          <circle cx="260" cy="140" r="10" fill="#6366f1"/><text x="275" y="145" font-size="12">Boston</text>
+          <line x1="150" y1="180" x2="300" y2="190" stroke="#0a84ff" stroke-width="2" stroke-dasharray="6 4"/>
+          <line x1="190" y1="210" x2="300" y2="190" stroke="#10b981" stroke-width="2" stroke-dasharray="6 4"/>
+          <line x1="300" y1="190" x2="400" y2="150" stroke="#ef4444" stroke-width="2" stroke-dasharray="6 4"/>
+          <line x1="260" y1="140" x2="300" y2="190" stroke="#6366f1" stroke-width="2" stroke-dasharray="6 4"/>
+          <text x="120" y="270" font-size="12" fill="#555">High throughput / low RTT</text>
+          <line x1="120" y1="260" x2="200" y2="260" stroke="#0a84ff" stroke-width="3"/>
+          <text x="340" y="270" font-size="12" fill="#555">Constrained / high RTT</text>
+          <line x1="340" y1="260" x2="420" y2="260" stroke="#ef4444" stroke-width="3" stroke-dasharray="6 4"/>
+        </svg>
+        <div class="card">
+          <div class="pill">Matchmaking</div>
+          <p>Tasks are assigned by stable matching (Gale-Shapley) or capability-based scoring. Telemetry adjusts staleness bounds and compression decisions per link.</p>
+          <p class="muted">Goal: maximize gradient acceptance and throughput while tolerating lossy/slow paths.</p>
+        </div>
+      </div>
+    </section>
+
     <section id="get-started" class="card" aria-labelledby="start-h">
       <h2 id="start-h">Reproduce locally</h2>
       <pre aria-label="Quickstart commands"><code>cd system
@@ -111,7 +161,11 @@ dist-llm-train demo-basic --config config.yaml --log-level INFO
 
     <section id="results" class="card" aria-labelledby="results-h">
       <h2 id="results-h">Results at a glance</h2>
-      <p class="muted">Data pulled directly from <code>system/runs_*.csv</code> (basic infra + ML training across WAN profiles). Suitable for MLSys appendices and posters.</p>
+      <p class="muted">Data pulled directly from <code>system/runs_*.csv</code> (basic infra + ML training across WAN profiles). We report average runtime and completion across presets.</p>
+      <div class="grid">
+        <canvas id="chart-basic" class="chart" aria-label="Basic mode duration by profile" role="img"></canvas>
+        <canvas id="chart-ml" class="chart" aria-label="ML mode duration by profile" role="img"></canvas>
+      </div>
       <div id="results-highlights" class="grid"></div>
       <div id="results-summary" class="grid"></div>
       <div class="scroll-x" aria-live="polite">
@@ -222,6 +276,51 @@ btnInstall.addEventListener('click', async () => {
     });
     if (!rows.length) return;
 
+    // Utility to average duration by profile for a given mode
+    const avgByProfile = (mode) => {
+      const stats = {};
+      rows.filter((r) => (r.mode || '').trim() === mode).forEach((r) => {
+        const profile = r.netem_profile || r.profile || 'n/a';
+        const duration = parseFloat(r.duration_s || '0');
+        if (!stats[profile]) stats[profile] = { total: 0, count: 0 };
+        if (!isNaN(duration)) {
+          stats[profile].total += duration;
+          stats[profile].count += 1;
+        }
+      });
+      return Object.entries(stats).map(([profile, v]) => ({
+        profile,
+        avg: v.count ? v.total / v.count : 0
+      })).sort((a, b) => a.avg - b.avg);
+    };
+
+    // Simple bar chart renderer
+    const drawBarChart = (canvasId, data, title) => {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas || !canvas.getContext) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width = canvas.clientWidth;
+      const h = canvas.height = canvas.clientHeight;
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = '#0f172a';
+      ctx.font = '14px system-ui';
+      ctx.fillText(title, 12, 22);
+      if (!data.length) return;
+      const maxVal = Math.max(...data.map(d => d.avg)) || 1;
+      const barWidth = Math.min(60, (w - 40) / data.length - 10);
+      data.forEach((d, i) => {
+        const x = 20 + i * (barWidth + 14);
+        const barHeight = (d.avg / maxVal) * (h - 80);
+        const y = h - 40 - barHeight;
+        ctx.fillStyle = '#0a84ff';
+        ctx.fillRect(x, y, barWidth, barHeight);
+        ctx.fillStyle = '#0f172a';
+        ctx.font = '12px system-ui';
+        ctx.fillText(d.profile, x, h - 20);
+        ctx.fillText(d.avg.toFixed(2), x, y - 6);
+      });
+    };
+
     // Highlights: fastest and slowest profile averages across all modes
     const profileStats = {};
     rows.forEach((r) => {
@@ -284,6 +383,10 @@ btnInstall.addEventListener('click', async () => {
       `;
       summaryEl.appendChild(card);
     });
+
+    // Bar charts for quick visual comparison
+    drawBarChart('chart-basic', avgByProfile('basic'), 'Basic mode: avg duration (s)');
+    drawBarChart('chart-ml', avgByProfile('ml'), 'ML mode: avg duration (s)');
 
     // Detailed table (first 24 rows)
     const tbody = document.querySelector('#results-table tbody');
