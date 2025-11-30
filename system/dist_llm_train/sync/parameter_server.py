@@ -2,7 +2,7 @@
 
 import torch
 import threading
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Set
 import copy
 import os
 import json
@@ -288,6 +288,8 @@ class BoundedAsyncCoordinator:
         self.worker_submission_times = {}  # {worker_id: [timestamps]}
         self.worker_speed_estimates = {}  # {worker_id: speed_multiplier}
         self.worker_staleness_bounds = {}  # {worker_id: max_staleness}
+        # Track all workers that have interacted (accepted or rejected) for stats
+        self.seen_workers: Set[str] = set()
 
         # Statistics
         self.total_gradients_received = 0
@@ -403,6 +405,7 @@ class BoundedAsyncCoordinator:
         """
         with self.lock:
             self.total_gradients_received += 1
+            self.seen_workers.add(worker_id)
 
             # If worker_step not provided, assume current step
             if worker_step is None:
@@ -442,6 +445,9 @@ class BoundedAsyncCoordinator:
             if gradients:
                 self.global_step += 1
                 self.barrier_count += 1  # For compatibility
+            else:
+                # Even if no gradients, advance the global clock to reflect elapsed cycles.
+                self.global_step += 1
             return gradients
 
     def get_statistics(self) -> Dict[str, Any]:
@@ -461,7 +467,7 @@ class BoundedAsyncCoordinator:
                 'total_received': self.total_gradients_received,
                 'total_rejected': self.total_gradients_rejected,
                 'rejection_rate': rejection_rate,
-                'active_workers': len(self.worker_steps),
+                'active_workers': len(self.seen_workers) if hasattr(self, "seen_workers") else len(self.worker_steps),
                 'pending_gradients': len(self.gradient_buffer),
                 'adaptive_staleness_enabled': self.adaptive_staleness,
                 'base_max_staleness': self.max_staleness

@@ -33,6 +33,7 @@
       <nav>
         <a href="#about">About</a>
         <a href="#links">Links</a>
+        <a href="#get-started">Get started</a>
         <a href="#pwa">Install</a>
         <a href="#lighthouse">Lighthouse</a>
       </nav>
@@ -50,9 +51,21 @@
     <section id="links" class="card" aria-labelledby="links-h">
       <h2 id="links-h">Project links</h2>
       <ul>
-        <li><strong>GitHub repo:</strong> <a id="repo-link" href="https://github.com/cesposo/thedataworkshop">https://github.com/&lt;cesposo&gt;/thedataworkshop</a></li>
-        <li><strong>ED Projects thread:</strong> <a id="ed-link" href="https://edstem.org/us/courses/82067/discussion/6862044?comment=15973163">https://&lt;edstem.org/us/courses/82067/discussion/6862044?comment=15973163&gt;</a></li>
+        <li><strong>GitHub repo:</strong> <a id="repo-link" href="https://github.com/cesposo/thedataworkshop">https://github.com/cesposo/thedataworkshop</a></li>
+        <li><strong>ED Projects thread:</strong> <a id="ed-link" href="https://edstem.org/us/courses/82067/discussion/6862044?comment=15973163">https://edstem.org/us/courses/82067/discussion/6862044?comment=15973163</a></li>
+        <li><strong>Docs:</strong> <a href="https://github.com/cesposo/thedataworkshop/tree/main/system/docs">Architecture & CLI guides</a></li>
       </ul>
+    </section>
+
+    <section id="get-started" class="card" aria-labelledby="start-h">
+      <h2 id="start-h">Get started</h2>
+      <p>Spin up the distributed training simulator locally.</p>
+      <pre aria-label="Quickstart commands"><code>cd system
+pip install -r requirements.txt
+pytest -q  # 100+ passing tests
+dist-llm-train demo-basic --config config.yaml --log-level INFO
+</code></pre>
+      <p class="muted">For ML training demos, use <code>dist-llm-train demo-ml --config config.yaml</code>. More CLI options live in <a href="https://github.com/cesposo/thedataworkshop/blob/main/system/README.md">system/README.md</a>.</p>
     </section>
 
     <section id="lighthouse" class="card" aria-labelledby="lh-h">

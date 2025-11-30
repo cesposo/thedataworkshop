@@ -348,6 +348,8 @@ class LatticeBuilder:
             executable = poset.get_executable_rotations(eliminated)
 
             for rot_id in executable:
+                if len(lattice.matchings) >= self.max_size:
+                    break
                 new_eliminated = eliminated | {rot_id}
                 frozen_new = frozenset(new_eliminated)
 

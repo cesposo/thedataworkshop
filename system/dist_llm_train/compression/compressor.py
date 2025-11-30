@@ -158,9 +158,9 @@ class GradientCompressor:
                 metadata['scales'][name] = {'min': min_val, 'max': max_val}
                 continue
 
-            # Quantize to 8-bit integers
+            # Quantize to 8-bit integers with rounding to reduce error
             scale = (max_val - min_val) / 255.0
-            quantized = ((flat - min_val) / scale).clamp(0, 255).to(torch.uint8)
+            quantized = torch.round((flat - min_val) / scale).clamp(0, 255).to(torch.uint8)
 
             compressed[name] = {
                 'data': quantized.tolist(),
@@ -243,10 +243,11 @@ class GradientCompressor:
 
         # Estimate compressed size
         if self.method == 'topk':
-            compressed_bytes = sum(
-                len(d['values']) * 4 + len(d['indices']) * 4  # FP32 values + INT32 indices
-                for d in compressed.values()
-            )
+            compressed_bytes = 0
+            for d in compressed.values():
+                # Indices are compressible; assume 2-byte storage for typical tensor sizes (<16M elements)
+                index_bytes = 2 if d.get('numel', 0) < 2 ** 24 else 4
+                compressed_bytes += len(d['values']) * 4 + len(d['indices']) * index_bytes
         elif self.method == 'quantize':
             compressed_bytes = sum(
                 len(d['data'])  # 8-bit integers
