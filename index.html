@@ -4,48 +4,71 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>DataWorkshop Research Hub</title>
-  <meta name="description" content="Democratizing LLM training in Open Science environments — project hub." />
+  <meta name="description" content="Distributed LLM training simulator — WAN-aware scheduling, compression, and robust aggregation with reproducible results." />
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icons/icon-192.png" type="image/png">
   <meta name="theme-color" content="#0a84ff">
   <style>
-    :root { --max: 880px; }
+    :root { --max: 960px; }
     body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, sans-serif;
-           line-height: 1.5; margin: 0; color: #111; background: #fff; }
-    header { border-bottom: 1px solid #e5e7eb; background: #f9fafb; }
+           line-height: 1.6; margin: 0; color: #111; background: #f5f7fb; }
+    header { background: #0a84ff; color: #fff; }
     .wrap { max-width: var(--max); margin: 0 auto; padding: 1.25rem; }
-    h1 { font-size: clamp(1.5rem, 2.2vw + 1rem, 2.25rem); margin: 0.2rem 0 0.6rem; }
-    nav a { margin-right: 1rem; }
-    main h2 { margin-top: 1.8rem; }
-    .card { border: 1px solid #e5e7eb; border-radius: 10px; padding: 1rem; margin: 1rem 0; }
+    nav a { margin-right: 1rem; color: #fff; text-decoration: none; font-weight: 600; }
+    .hero { display:flex; flex-direction:column; gap:.6rem; padding:1.25rem; background:linear-gradient(135deg, #0a84ff, #0ab3ff); color:#fff; border-radius:14px; box-shadow: 0 12px 28px rgba(10,132,255,0.28); margin-top:1rem; }
+    .hero h1 { margin:0; font-size: clamp(1.8rem, 2vw + 1rem, 2.6rem); }
+    .hero p { margin:0; max-width: 720px; }
+    main h2 { margin-top: 1.6rem; }
+    .card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 1rem; margin: 1rem 0; background:#fff; box-shadow: 0 8px 24px rgba(0,0,0,0.05); }
     button.install { padding: .6rem 1rem; border-radius: 8px; border: 1px solid #0a84ff; background: #0a84ff; color: #fff; font-weight: 600; }
     button.install[disabled] { opacity:.5; cursor:not-allowed; }
-    footer { border-top: 1px solid #e5e7eb; background: #fafafa; margin-top: 2rem; }
+    footer { border-top: 1px solid #e5e7eb; background: #f0f4fa; margin-top: 2rem; }
     .muted { color: #555; }
-    a.button { display:inline-block; padding:.55rem .9rem; border:1px solid #111; border-radius:8px; text-decoration:none; }
+    a.button { display:inline-block; padding:.55rem .95rem; border:1px solid #111; border-radius:10px; text-decoration:none; background:#fff; color:#111; box-shadow: 0 6px 18px rgba(0,0,0,0.04); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-top:.5rem; }
+    .pill { display:inline-block; padding: .2rem .55rem; border-radius: 6px; background:#eef2ff; color:#222; font-size:.85rem; }
+    table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+    th, td { padding: .45rem .5rem; border-bottom: 1px solid #e5e7eb; text-align: left; }
+    th { font-weight: 700; }
+    .scroll-x { overflow-x: auto; }
+    code { background:#f3f4f6; padding:0.05rem 0.35rem; border-radius:6px; }
+    ul { padding-left: 1.1rem; }
   </style>
 </head>
 <body>
   <header>
-    <div class="wrap" role="navigation" aria-label="Primary">
-      <h1>DataWorkshop Research Hub</h1>
-      <p class="muted">Democratizing Large Language Model Training in Open Science Environments</p>
-      <nav>
-        <a href="#about">About</a>
-        <a href="#links">Links</a>
-        <a href="#get-started">Get started</a>
+    <div class="wrap">
+      <div class="hero" role="banner">
+        <div>
+          <div class="pill">Distributed LLM training research</div>
+          <h1>DataWorkshop Research Hub</h1>
+          <p>MLSys-ready simulator for WAN impairments, heterogeneous nodes, and robust aggregation. Backed by 100+ passing tests and reproducible CSV runs.</p>
+        </div>
+        <div style="display:flex; gap:0.65rem; flex-wrap:wrap;">
+          <a class="button" href="https://github.com/cesposo/thedataworkshop">View repo</a>
+          <a class="button" href="https://github.com/cesposo/thedataworkshop/tree/main/system/docs">Read docs</a>
+        </div>
+      </div>
+      <nav aria-label="Primary">
+        <a href="#about">Overview</a>
+        <a href="#method">Methodology</a>
+        <a href="#get-started">Reproduce</a>
+        <a href="#results">Results</a>
         <a href="#pwa">Install</a>
-        <a href="#lighthouse">Lighthouse</a>
       </nav>
     </div>
   </header>
 
   <main class="wrap">
     <section id="about" class="card" aria-labelledby="about-h">
-      <h2 id="about-h">About this project</h2>
-      <p>This minimal, installable web app is the front door for the semester project:
-      <strong>Democratizing Large Language Model Training in Open Science Environments</strong>.
-      It's built as a static PWA so it's fast, accessible, and easy to deploy.</p>
+      <h2 id="about-h">Overview</h2>
+      <p>This project studies distributed LLM training in open, unreliable environments. The simulator exercises controller/worker scheduling, adaptive staleness (async PS), gradient compression, and Byzantine-robust aggregation over WAN profiles.</p>
+      <ul>
+        <li>Pluggable schedulers (priority, Gale-Shapley, capability) with telemetry.</li>
+        <li>Async PS with adaptive staleness, top-k/quantize/fp16 compression, and robust aggregation (trimmed mean, Krum, Bulyan).</li>
+        <li>WAN netem presets: good, cellular, degraded, brownout, straggler, satellite.</li>
+        <li>Persistence: SQLite snapshots + PS checkpoints; CLI to resume and run experiments.</li>
+      </ul>
     </section>
 
     <section id="links" class="card" aria-labelledby="links-h">
@@ -57,20 +80,63 @@
       </ul>
     </section>
 
+    <section id="method" class="card" aria-labelledby="method-h">
+      <h2 id="method-h">Experiment design</h2>
+      <p class="muted">WAN profiles are applied via netem presets (latency, jitter, loss, bandwidth caps). Each run logs duration, completion counts, and EWMA throughput.</p>
+      <div class="grid">
+        <div class="card">
+          <div class="pill">Infrastructure</div>
+          <p><strong>Basic mode</strong> validates scheduling, heartbeat health, and fault handling without PyTorch cost.</p>
+        </div>
+        <div class="card">
+          <div class="pill">Training</div>
+          <p><strong>ML mode</strong> runs a tiny LSTM with async PS, compression, and robust aggregation to observe convergence under WAN stress.</p>
+        </div>
+        <div class="card">
+          <div class="pill">Reproducibility</div>
+          <p>All runs are stored in <code>system/runs_*.csv</code>; checkpoints live in <code>system/checkpoints</code>. Configs under <code>system/configs</code> mirror the runs.</p>
+        </div>
+      </div>
+    </section>
+
     <section id="get-started" class="card" aria-labelledby="start-h">
-      <h2 id="start-h">Get started</h2>
-      <p>Spin up the distributed training simulator locally.</p>
+      <h2 id="start-h">Reproduce locally</h2>
       <pre aria-label="Quickstart commands"><code>cd system
 pip install -r requirements.txt
 pytest -q  # 100+ passing tests
 dist-llm-train demo-basic --config config.yaml --log-level INFO
 </code></pre>
-      <p class="muted">For ML training demos, use <code>dist-llm-train demo-ml --config config.yaml</code>. More CLI options live in <a href="https://github.com/cesposo/thedataworkshop/blob/main/system/README.md">system/README.md</a>.</p>
+      <p class="muted">For ML training demos, run <code>dist-llm-train demo-ml --config config.yaml</code>. More CLI options: <code>system/README.md</code>. Experiments runner: <code>dist-llm-train run-experiments --glob \"configs/*_demo.yaml\"</code>.</p>
+    </section>
+
+    <section id="results" class="card" aria-labelledby="results-h">
+      <h2 id="results-h">Results at a glance</h2>
+      <p class="muted">Data pulled directly from <code>system/runs_*.csv</code> (basic infra + ML training across WAN profiles). Suitable for MLSys appendices and posters.</p>
+      <div id="results-highlights" class="grid"></div>
+      <div id="results-summary" class="grid"></div>
+      <div class="scroll-x" aria-live="polite">
+        <table id="results-table">
+          <thead>
+            <tr>
+              <th>Mode</th>
+              <th>Profile</th>
+              <th>Repeat</th>
+              <th>Duration (s)</th>
+              <th>Workers</th>
+              <th>Completed</th>
+              <th>Pending</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="7" class="muted">Loading CSV results…</td></tr>
+          </tbody>
+        </table>
+      </div>
     </section>
 
     <section id="lighthouse" class="card" aria-labelledby="lh-h">
-      <h2 id="lh-h">Lighthouse metrics</h2>
-      <p>This site is designed for high scores on Performance, Accessibility, Best Practices, and SEO. A GitHub Action runs Lighthouse CI on every push and warns if thresholds drop.</p>
+      <h2 id="lh-h">Production-readiness</h2>
+      <p class="muted">Static PWA with offline cache and Lighthouse-friendly defaults. GitHub Actions can run Lighthouse CI and unit tests on push.</p>
       <a class="button" href="https://web.dev/measure/" target="_blank" rel="noreferrer">Run a manual audit</a>
     </section>
 
@@ -110,11 +176,136 @@ window.addEventListener('beforeinstallprompt', (e) => {
 btnInstall.addEventListener('click', async () => {
   if (!deferredPrompt) return;
   deferredPrompt.prompt();
-  const { outcome } = await deferredPrompt.userChoice;
+  await deferredPrompt.userChoice;
   deferredPrompt = null;
   btnInstall.disabled = true;
   btnInstall.setAttribute('aria-disabled', 'true');
 });
+
+// Load CSV run results and render summary + table
+(function loadRuns() {
+  const sources = [
+    './system/runs_basic_good.csv',
+    './system/runs_basic_degraded.csv',
+    './system/runs_basic_brownout.csv',
+    './system/runs_basic_straggler.csv',
+    './system/runs_basic_cellular.csv',
+    './system/runs_basic_satellite.csv',
+    './system/runs_ml_good.csv',
+    './system/runs_ml_degraded.csv',
+    './system/runs_ml_brownout.csv',
+    './system/runs_ml_straggler.csv',
+    './system/runs_ml_cellular.csv',
+    './system/runs_ml_satellite.csv'
+  ];
+
+  const parseCsv = (text) => {
+    const lines = text.trim().split(/\r?\n/).filter(Boolean);
+    const headers = lines.shift().split(',');
+    return lines.map((row) => {
+      const cols = row.split(',');
+      const obj = {};
+      headers.forEach((h, i) => obj[h] = cols[i] ?? '');
+      return obj;
+    });
+  };
+
+  Promise.all(
+    sources.map((path) =>
+      fetch(path).then((r) => r.ok ? r.text() : null).catch(() => null)
+    )
+  ).then((payloads) => {
+    const rows = [];
+    payloads.forEach((text) => {
+      if (!text) return;
+      rows.push(...parseCsv(text));
+    });
+    if (!rows.length) return;
+
+    // Highlights: fastest and slowest profile averages across all modes
+    const profileStats = {};
+    rows.forEach((r) => {
+      const profile = r.netem_profile || r.profile || 'n/a';
+      const duration = parseFloat(r.duration_s || '0');
+      if (!profileStats[profile]) profileStats[profile] = { total: 0, count: 0 };
+      if (!isNaN(duration)) {
+        profileStats[profile].total += duration;
+        profileStats[profile].count += 1;
+      }
+    });
+    const averages = Object.entries(profileStats)
+      .filter(([, v]) => v.count > 0)
+      .map(([profile, v]) => ({ profile, avg: v.total / v.count }));
+    averages.sort((a, b) => a.avg - b.avg);
+
+    const highlightsEl = document.getElementById('results-highlights');
+    highlightsEl.innerHTML = '';
+    if (averages.length) {
+      const fastest = averages[0];
+      const slowest = averages[averages.length - 1];
+      const mkHighlight = (title, data, tone) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="pill">${title}</div>
+          <h3 style="margin:0.4rem 0">${data.profile}</h3>
+          <p><strong>Avg duration:</strong> ${data.avg.toFixed(2)}s</p>
+          <p class="muted">${tone}</p>
+        `;
+        highlightsEl.appendChild(card);
+      };
+      mkHighlight('Fastest WAN profile', fastest, 'Best-case netem preset from recorded runs.');
+      mkHighlight('Slowest WAN profile', slowest, 'Stress preset showing upper bound on runtime.');
+    }
+
+    // Summary cards by mode + profile
+    const summary = {};
+    rows.forEach((r) => {
+      const key = `${r.mode || 'unknown'}|${r.netem_profile || r.profile || 'n/a'}`;
+      const duration = parseFloat(r.duration_s || '0');
+      if (!summary[key]) {
+        summary[key] = { mode: r.mode || 'unknown', profile: r.netem_profile || r.profile || 'n/a', count: 0, totalDur: 0 };
+      }
+      summary[key].count += 1;
+      summary[key].totalDur += isNaN(duration) ? 0 : duration;
+    });
+
+    const summaryEl = document.getElementById('results-summary');
+    summaryEl.innerHTML = '';
+    Object.values(summary).sort((a, b) => a.profile.localeCompare(b.profile)).forEach((item) => {
+      const avg = item.count ? (item.totalDur / item.count).toFixed(2) : '—';
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <div class="pill">${item.mode}</div>
+        <h3 style="margin:0.4rem 0">${item.profile} profile</h3>
+        <p class="muted">Runs: ${item.count}</p>
+        <p><strong>Avg duration:</strong> ${avg}s</p>
+      `;
+      summaryEl.appendChild(card);
+    });
+
+    // Detailed table (first 24 rows)
+    const tbody = document.querySelector('#results-table tbody');
+    tbody.innerHTML = '';
+    rows.slice(0, 24).forEach((r) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${r.mode || ''}</td>
+        <td>${r.netem_profile || r.profile || ''}</td>
+        <td>${r.repeat || ''}</td>
+        <td>${r.duration_s || ''}</td>
+        <td>${r.num_workers || ''}</td>
+        <td>${r.num_completed_tasks || ''}</td>
+        <td>${r.num_pending_tasks || ''}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }).catch(() => {
+    const tbody = document.querySelector('#results-table tbody');
+    tbody.innerHTML = '<tr><td colspan="7" class="muted">Could not load run data.</td></tr>';
+  });
+})();
 </script>
 </body>
 </html>
